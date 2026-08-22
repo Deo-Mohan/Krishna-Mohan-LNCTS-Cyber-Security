@@ -72,10 +72,19 @@ export default function Sidebar({ isOpen, setIsOpen, activeTab, setActiveTab }: 
                 onClick={() => {
                   setActiveTab(item.id);
                   setIsOpen(false);
-                  const element = document.getElementById(item.id);
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
+                  
+                  setTimeout(() => {
+                    const mainElement = document.querySelector('main');
+                    const targetElement = document.getElementById(item.id);
+                    if (mainElement && targetElement) {
+                      const parentRect = mainElement.getBoundingClientRect();
+                      const targetRect = targetElement.getBoundingClientRect();
+                      const scrollTop = mainElement.scrollTop + targetRect.top - parentRect.top - 16;
+                      mainElement.scrollTo({ top: scrollTop, behavior: 'smooth' });
+                    } else if (targetElement) {
+                      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }, 50);
                 }}
                 className={`flex w-full items-center gap-3.5 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
                   isActive 

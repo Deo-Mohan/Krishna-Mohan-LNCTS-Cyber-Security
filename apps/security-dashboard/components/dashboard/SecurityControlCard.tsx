@@ -12,39 +12,39 @@ export default function SecurityControlCard({ control, onViewDetails }: Security
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'PASS':
-        return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20';
       case 'INFO':
       case 'WARNING':
-        return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20';
       case 'FAIL':
       default:
-        return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+        return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20';
     }
   };
 
   const getStatusDot = (status: string) => {
     switch (status) {
       case 'PASS':
-        return 'bg-emerald-400';
+        return 'bg-emerald-500 dark:bg-emerald-400';
       case 'INFO':
       case 'WARNING':
-        return 'bg-amber-400';
+        return 'bg-amber-500 dark:bg-amber-400';
       case 'FAIL':
       default:
-        return 'bg-rose-400';
+        return 'bg-rose-500 dark:bg-rose-400';
     }
   };
 
   const getIconColor = (status: string) => {
     switch (status) {
       case 'PASS':
-        return 'text-emerald-400';
+        return 'text-emerald-600 dark:text-emerald-400';
       case 'INFO':
       case 'WARNING':
-        return 'text-amber-400';
+        return 'text-amber-600 dark:text-amber-400';
       case 'FAIL':
       default:
-        return 'text-rose-400';
+        return 'text-rose-600 dark:text-rose-400';
     }
   };
 
@@ -106,37 +106,37 @@ export default function SecurityControlCard({ control, onViewDetails }: Security
   const colorClass = getIconColor(status);
 
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-zinc-800 bg-zinc-950 p-5 shadow-sm transition-all hover:border-zinc-700/60">
+    <div className="flex flex-col justify-between glass-card p-5 shadow-premium transition-all duration-300 animate-slide-up hover:scale-[1.02]">
       <div>
         <div className="flex items-start justify-between">
           <div className={`rounded-lg p-2.5 ${status === 'PASS' ? 'bg-emerald-500/10' : status === 'INFO' || status === 'WARNING' ? 'bg-amber-500/10' : 'bg-rose-500/10'}`}>
             {getIcon(control.id, colorClass)}
           </div>
           <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${getStatusStyle(status)}`}>
-            <span className={`h-1 w-1 rounded-full ${getStatusDot(status)}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${getStatusDot(status)}`} />
             {status}
           </span>
         </div>
 
         <div className="mt-4">
-          <h3 className="text-sm font-semibold text-zinc-200">{control.name}</h3>
-          <p className="text-xs text-zinc-500 mt-0.5">{control.category}</p>
-          <p className="mt-2 text-xs leading-relaxed text-zinc-400 line-clamp-3">
+          <h3 className="text-sm font-semibold text-foreground">{control.name}</h3>
+          <p className="text-xs text-text-muted mt-0.5">{control.category}</p>
+          <p className="mt-2 text-xs leading-relaxed text-text-muted line-clamp-3">
             {control.description}
           </p>
         </div>
       </div>
 
-      <div className="mt-5 pt-4 border-t border-zinc-900 flex items-center justify-between">
+      <div className="mt-5 pt-4 border-t border-border-color flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-mono">Metric / Identity</span>
-          <span className="text-xs font-mono text-zinc-300 font-medium truncate max-w-[140px] mt-0.5">
+          <span className="text-[9px] uppercase tracking-wider text-text-muted font-mono">Metric / Identity</span>
+          <span className="text-xs font-mono text-foreground font-medium truncate max-w-[140px] mt-0.5">
             {control.metric || 'Active'}
           </span>
         </div>
         <button
           onClick={() => onViewDetails(control)}
-          className="text-xs font-semibold text-emerald-500 hover:text-emerald-400 transition-colors flex items-center gap-1 group"
+          className="text-xs font-semibold text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 group active:scale-95 duration-100"
         >
           View Details
           <svg 

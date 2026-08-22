@@ -38,12 +38,12 @@ export default function WorkloadCard({ workload }: WorkloadCardProps) {
   const getCheckStatusBadge = (status: string) => {
     switch (status) {
       case 'PASS':
-        return 'text-emerald-400 bg-emerald-500/5 border-emerald-500/10';
+        return 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/10';
       case 'FAIL':
-        return 'text-rose-400 bg-rose-500/5 border-rose-500/10';
+        return 'text-rose-600 dark:text-rose-400 bg-rose-500/5 border-rose-200 dark:border-rose-500/10';
       case 'N/A':
       default:
-        return 'text-zinc-500 bg-zinc-900/40 border-zinc-800/40';
+        return 'text-text-muted bg-subtle-bg/30 border-border-color';
     }
   };
 
@@ -60,70 +60,70 @@ export default function WorkloadCard({ workload }: WorkloadCardProps) {
   };
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-5 shadow-sm space-y-4">
+    <div className="glass-card p-5 shadow-premium space-y-4 animate-slide-up hover:scale-[1.01]">
       {/* Card Header */}
-      <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+      <div className="flex items-center justify-between border-b border-border-color pb-3">
         <div className="flex items-center gap-2.5">
           <div className={`h-2.5 w-2.5 rounded-full ${workload.type === 'Application' ? 'bg-indigo-500' : 'bg-teal-500'}`} />
           <div>
-            <h4 className="text-sm font-semibold text-zinc-200">{workload.name}</h4>
+            <h4 className="text-sm font-semibold text-foreground">{workload.name}</h4>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">{workload.type}</span>
-              <span className="text-[10px] text-zinc-650 font-mono">•</span>
-              <span className="text-[10px] text-zinc-500 font-mono">ns/{workload.namespace || 'exam'}</span>
+              <span className="text-[10px] text-text-muted uppercase tracking-wider font-mono">{workload.type}</span>
+              <span className="text-[10px] text-text-muted/40 font-mono">•</span>
+              <span className="text-[10px] text-text-muted font-mono">ns/{workload.namespace || 'exam'}</span>
             </div>
           </div>
         </div>
         <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase ${
           isRunning 
-            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20' 
+            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20'
         }`}>
           {workload.status}
         </span>
       </div>
 
       {/* Basic Metrics Grid */}
-      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs border-b border-zinc-900/60 pb-3.5">
+      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs border-b border-border-color pb-3.5">
         <div>
-          <span className="text-zinc-500 block text-[10px] uppercase tracking-wider">Ready Replicas</span>
-          <span className="font-mono text-zinc-200 font-semibold">{workload.ready}</span>
+          <span className="text-text-muted block text-[10px] uppercase tracking-wider">Ready Replicas</span>
+          <span className="font-mono text-foreground font-semibold">{workload.ready}</span>
         </div>
         <div>
-          <span className="text-zinc-500 block text-[10px] uppercase tracking-wider">Restart Count</span>
-          <span className="font-mono text-zinc-200 font-semibold">{workload.restarts}</span>
+          <span className="text-text-muted block text-[10px] uppercase tracking-wider">Restart Count</span>
+          <span className="font-mono text-foreground font-semibold">{workload.restarts}</span>
         </div>
         <div className="col-span-2">
-          <span className="text-zinc-500 block text-[10px] uppercase tracking-wider">Container Image</span>
-          <span className="font-mono text-zinc-400 text-[10.5px] truncate block mt-0.5" title={workload.image}>
+          <span className="text-text-muted block text-[10px] uppercase tracking-wider">Container Image</span>
+          <span className="font-mono text-text-muted text-[10.5px] truncate block mt-0.5" title={workload.image}>
             {workload.image || 'N/A'}
           </span>
         </div>
       </div>
 
       {/* CPU & Memory Requests/Limits Grid */}
-      <div className="grid grid-cols-2 gap-3 text-xs border-b border-zinc-900/60 pb-3.5">
+      <div className="grid grid-cols-2 gap-3 text-xs border-b border-border-color pb-3.5">
         <div>
-          <span className="text-zinc-500 block text-[10px] uppercase tracking-wider mb-1">CPU Request / Limit</span>
-          <div className="font-mono text-[11px] text-zinc-300 font-medium space-x-1">
-            <span className="bg-zinc-900 px-1.5 py-0.5 rounded text-zinc-400">{res?.requests?.cpu || 'N/A'}</span>
-            <span className="text-zinc-650">/</span>
-            <span className="bg-zinc-900 px-1.5 py-0.5 rounded text-zinc-300">{res?.limits?.cpu || 'N/A'}</span>
+          <span className="text-text-muted block text-[10px] uppercase tracking-wider mb-1">CPU Request / Limit</span>
+          <div className="font-mono text-[11px] text-foreground font-medium space-x-1">
+            <span className="bg-subtle-bg px-1.5 py-0.5 rounded text-text-muted">{res?.requests?.cpu || 'N/A'}</span>
+            <span className="text-text-muted/40">/</span>
+            <span className="bg-subtle-bg px-1.5 py-0.5 rounded text-foreground">{res?.limits?.cpu || 'N/A'}</span>
           </div>
         </div>
         <div>
-          <span className="text-zinc-500 block text-[10px] uppercase tracking-wider mb-1">Memory Req / Limit</span>
-          <div className="font-mono text-[11px] text-zinc-300 font-medium space-x-1">
-            <span className="bg-zinc-900 px-1.5 py-0.5 rounded text-zinc-400">{res?.requests?.memory || 'N/A'}</span>
-            <span className="text-zinc-650">/</span>
-            <span className="bg-zinc-900 px-1.5 py-0.5 rounded text-zinc-300">{res?.limits?.memory || 'N/A'}</span>
+          <span className="text-text-muted block text-[10px] uppercase tracking-wider mb-1">Memory Req / Limit</span>
+          <div className="font-mono text-[11px] text-foreground font-medium space-x-1">
+            <span className="bg-subtle-bg px-1.5 py-0.5 rounded text-text-muted">{res?.requests?.memory || 'N/A'}</span>
+            <span className="text-text-muted/40">/</span>
+            <span className="bg-subtle-bg px-1.5 py-0.5 rounded text-foreground">{res?.limits?.memory || 'N/A'}</span>
           </div>
         </div>
       </div>
 
       {/* Security Context & Network Controls Checklist */}
       <div className="space-y-2">
-        <span className="text-zinc-500 block text-[9px] uppercase tracking-wider font-semibold font-mono">Security Context Audits</span>
+        <span className="text-text-muted block text-[9px] uppercase tracking-wider font-semibold font-mono">Security Context Audits</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {securityChecks.map((check) => (
             <div 

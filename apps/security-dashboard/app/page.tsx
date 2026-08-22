@@ -255,7 +255,7 @@ export default function DashboardPage() {
     : null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground transition-colors duration-300">
       {/* Navigation Sidebar */}
       <Sidebar 
         isOpen={isSidebarOpen} 
@@ -271,22 +271,45 @@ export default function DashboardPage() {
         {/* Content Body */}
         <main className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            /* Loading State view */
-            <div className="flex h-[calc(100vh-12rem)] flex-col items-center justify-center text-center p-6">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-800 border-t-emerald-500 mb-4" />
-              <h2 className="text-sm font-semibold text-zinc-200">Loading security posture...</h2>
-              <p className="text-xs text-zinc-500 mt-1">Contacting cluster control plane APIs</p>
+            /* Premium Skeleton Loader */
+            <div className="space-y-6 animate-pulse">
+              {/* Header Skeleton */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border-color pb-5">
+                <div className="space-y-2">
+                  <div className="h-7 w-48 bg-subtle-bg rounded" />
+                  <div className="h-4 w-72 bg-subtle-bg rounded" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-8 w-24 bg-subtle-bg rounded-lg" />
+                  <div className="h-8 w-32 bg-subtle-bg rounded-lg" />
+                </div>
+              </div>
+              
+              {/* Top Cards Skeleton */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="glass-card p-6 h-64 bg-subtle-bg/10" />
+                <div className="glass-card p-6 h-64 bg-subtle-bg/10" />
+              </div>
+
+              {/* Grid 2 Skeleton */}
+              <div className="space-y-3">
+                <div className="h-5 w-36 bg-subtle-bg rounded" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="glass-card p-5 h-48 bg-subtle-bg/10" />
+                  <div className="glass-card p-5 h-48 bg-subtle-bg/10" />
+                </div>
+              </div>
             </div>
           ) : error ? (
             /* Error State view */
             <div className="flex h-[calc(100vh-12rem)] flex-col items-center justify-center text-center p-6">
-              <div className="rounded-full bg-rose-500/10 border border-rose-500/20 p-4 mb-4 text-rose-400">
+              <div className="rounded-full bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 p-4 mb-4 text-rose-600 dark:text-rose-400">
                 <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h2 className="text-base font-semibold text-zinc-200">{error}</h2>
-              <p className="text-xs text-zinc-500 max-w-sm mt-1">
+              <h2 className="text-base font-semibold text-foreground">{error}</h2>
+              <p className="text-xs text-text-muted max-w-sm mt-1">
                 {error === 'Monitoring permission denied'
                   ? 'The dashboard ServiceAccount lacks appropriate read privileges in the exam namespace.'
                   : error === 'Kubernetes monitoring unavailable'
@@ -294,7 +317,7 @@ export default function DashboardPage() {
                   : 'Check backend server logs for more details on the connection issue.'}
               </p>
               {error === 'Kubernetes monitoring unavailable' && (
-                <div className="mt-4 rounded-md bg-zinc-900 border border-zinc-800 p-3 max-w-md text-[11px] font-mono text-zinc-400">
+                <div className="mt-4 rounded-md bg-subtle-bg border border-border-color p-3 max-w-md text-[11px] font-mono text-text-muted">
                   Fallback Mode: Run next dev locally if cluster is offline.
                 </div>
               )}
@@ -302,28 +325,28 @@ export default function DashboardPage() {
           ) : ['overview', 'workloads', 'network-security', 'resource-controls', 'security-controls', 'verification'].includes(activeTab) ? (
             <div className="space-y-6">
               {/* Header section */}
-              <div id="overview" className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-900 pb-5">
+              <div id="overview" className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border-color pb-5">
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Security Overview</h1>
-                  <p className="text-xs text-zinc-400 mt-1">
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Security Overview</h1>
+                  <p className="text-xs text-text-muted mt-1">
                     Real-time security posture of the SecureHaven Kubernetes environment.
                   </p>
                 </div>
                 
                 {/* Meta details */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300">
-                    <span className="text-zinc-500">Cluster:</span>
+                  <div className="flex items-center gap-1.5 rounded-lg bg-card-bg border border-border-color px-3 py-1.5 text-xs text-foreground">
+                    <span className="text-text-muted/70">Cluster:</span>
                     <span className="font-semibold">{liveData?.cluster || 'securehaven'}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300">
-                    <span className="text-zinc-500">Namespace:</span>
-                    <span className="font-semibold text-emerald-400">{liveData?.namespace || 'exam'}</span>
+                  <div className="flex items-center gap-1.5 rounded-lg bg-card-bg border border-border-color px-3 py-1.5 text-xs text-foreground">
+                    <span className="text-text-muted/70">Namespace:</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{liveData?.namespace || 'exam'}</span>
                   </div>
                   <div className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${
                     derivedStatus === 'SECURE' 
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                      : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                      ? 'bg-emerald-500/10 border-emerald-250 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                      : 'bg-amber-500/10 border-amber-250 dark:border-amber-500/20 text-amber-600 dark:text-amber-400'
                   }`}>
                     {derivedStatus} / PASS
                   </div>
@@ -338,9 +361,9 @@ export default function DashboardPage() {
 
               {/* Section: Workload Health */}
               <div id="workloads" className="space-y-3">
-                <div className="border-b border-zinc-900 pb-2">
-                  <h2 className="text-base font-semibold text-zinc-200">Hardened Workloads</h2>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Health states of workloads in the target namespace</p>
+                <div className="border-b border-border-color pb-2">
+                  <h2 className="text-base font-semibold text-foreground">Hardened Workloads</h2>
+                  <p className="text-[10px] text-text-muted mt-0.5">Health states of workloads in the target namespace</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {derivedWorkloads.map((workload) => (
@@ -351,9 +374,9 @@ export default function DashboardPage() {
 
               {/* Section: Security Controls Grid */}
               <div id="security-controls" className="space-y-3">
-                <div className="border-b border-zinc-900 pb-2">
-                  <h2 className="text-base font-semibold text-zinc-200">Security Control Matrix</h2>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Verification checklist mapping zero-trust domains</p>
+                <div className="border-b border-border-color pb-2">
+                  <h2 className="text-base font-semibold text-foreground">Security Control Matrix</h2>
+                  <p className="text-[10px] text-text-muted mt-0.5">Verification checklist mapping zero-trust domains</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                   {derivedControls.map((control) => (
@@ -382,22 +405,21 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            /* Subpage Placeholder View */
             <div className="flex h-[calc(100vh-12rem)] flex-col items-center justify-center text-center p-6">
-              <div className="rounded-full bg-zinc-900 border border-zinc-800 p-4 mb-4">
-                <svg className="h-8 w-8 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="rounded-full bg-subtle-bg border border-border-color p-4 mb-4">
+                <svg className="h-8 w-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h2 className="text-lg font-semibold text-zinc-200 capitalize">
+              <h2 className="text-lg font-semibold text-foreground capitalize">
                 {activeTab.replace('-', ' ')} Domain View
               </h2>
-              <p className="text-xs text-zinc-500 max-w-sm mt-1">
+              <p className="text-xs text-text-muted max-w-sm mt-1">
                 This is a UI-only navigation placeholder. The security controls for this domain are active and monitored in the main Dashboard overview.
               </p>
               <button 
                 onClick={() => setActiveTab('overview')}
-                className="mt-4 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-zinc-950 hover:bg-emerald-400 transition-colors"
+                className="mt-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-background dark:bg-emerald-500 dark:hover:bg-emerald-400 px-4 py-2 text-xs font-semibold transition-all active:scale-95 duration-100 shadow-sm"
               >
                 Return to Dashboard
               </button>
@@ -408,44 +430,44 @@ export default function DashboardPage() {
 
       {/* Control Details Modal */}
       {selectedControl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 dark:bg-black/75 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg rounded-xl border border-card-border bg-card-bg p-6 shadow-2xl space-y-4">
             
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+            <div className="flex items-center justify-between border-b border-border-color pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-100">{selectedControl.name}</h3>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wide">{selectedControl.category}</span>
+                <h3 className="text-base font-bold text-foreground">{selectedControl.name}</h3>
+                <span className="text-[10px] text-text-muted uppercase tracking-wide">{selectedControl.category}</span>
               </div>
               <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
                 selectedControl.status === 'PASS' 
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                  : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-500/20' 
+                  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-250 dark:border-amber-500/20'
               }`}>
                 {selectedControl.status}
               </span>
             </div>
 
-            <div className="space-y-3.5 text-xs text-zinc-300 leading-relaxed">
+            <div className="space-y-3.5 text-xs text-text-muted leading-relaxed">
               <p>{selectedControl.description}</p>
               
-              <div className="rounded-lg bg-zinc-900/50 border border-zinc-900 p-3 space-y-2 font-mono">
+              <div className="rounded-lg bg-subtle-bg/30 border border-border-color p-3 space-y-2 font-mono">
                 <div className="flex justify-between">
-                  <span className="text-zinc-500">Metric Identity:</span>
-                  <span className="text-zinc-200">{selectedControl.metric || 'N/A'}</span>
+                  <span className="text-text-muted/70">Metric Identity:</span>
+                  <span className="text-foreground">{selectedControl.metric || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-zinc-500">Validation Status:</span>
-                  <span className={selectedControl.status === 'PASS' ? 'text-emerald-400' : 'text-amber-400'}>
+                  <span className="text-text-muted/70">Validation Status:</span>
+                  <span className={selectedControl.status === 'PASS' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
                     {selectedControl.status === 'PASS' ? 'COMPLIANT' : 'PARTIAL / WARNING'}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-2 border-t border-zinc-900">
+            <div className="flex justify-end pt-2 border-t border-border-color">
               <button 
                 onClick={closeDetailsModal}
-                className="rounded-lg bg-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition-colors"
+                className="rounded-lg bg-subtle-bg border border-border-color px-4 py-2 text-xs font-semibold text-foreground hover:bg-subtle-bg/70 transition-colors active:scale-95 duration-100"
               >
                 Close Details
               </button>

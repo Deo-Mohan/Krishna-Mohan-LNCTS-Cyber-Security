@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exam-app
+  namespace: exam
+  labels:
+    app: exam-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exam-app
+  template:
+    metadata:
+      labels:
+        app: exam-app
+    spec:
+      serviceAccountName: exam-app-sa
+      automountServiceAccountToken: false
+      containers:
+        - name: portal
+          image: exam-app:latest
+          imagePullPolicy: Never
+          env:
+            - name: PORT
+              value: "8083"
+            - name: DB_HOST
+              value: "exam-db"
+            - name: DB_PORT
+              value: "1521"
+            - name: DB_USER
+              value: "exam_user"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: exam-db-secret
+                  key: db-password
+            - name: DB_NAME
+              value: "exam_db"
+            - name: STRICT_DB_CHECK
+              value: "true"
+          ports:
+            - containerPort: 8083
+              name: http
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8083
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8083
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      volumes:
+        - name: tmp
+          emptyDir: {}

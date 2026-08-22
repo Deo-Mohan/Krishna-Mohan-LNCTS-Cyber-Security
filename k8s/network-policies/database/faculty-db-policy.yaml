@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: faculty-db-ingress
+  namespace: faculty
+spec:
+  podSelector:
+    matchLabels:
+      app: faculty-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: faculty-app
+      ports:
+        - protocol: TCP
+          port: 3306
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: faculty-app-egress-to-db
+  namespace: faculty
+spec:
+  podSelector:
+    matchLabels:
+      app: faculty-app
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: faculty-db
+      ports:
+        - protocol: TCP
+          port: 3306

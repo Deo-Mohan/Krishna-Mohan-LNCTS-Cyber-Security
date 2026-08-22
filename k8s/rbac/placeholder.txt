@@ -1,0 +1,2 @@
+# RBAC Configuration Placeholder
+# Manifests for ServiceAccounts, Roles, and RoleBindings will be created here in later phases.

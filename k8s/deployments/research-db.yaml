@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: research-db
+  namespace: research
+  labels:
+    app: research-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: research-db
+  template:
+    metadata:
+      labels:
+        app: research-db
+    spec:
+      serviceAccountName: research-db-sa
+      automountServiceAccountToken: false
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          env:
+            - name: POSTGRES_USER
+              value: research_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: research-db-secret
+                  key: db-password
+            - name: POSTGRES_DB
+              value: research_db
+          ports:
+            - containerPort: 5432
+              name: postgres
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - research_user
+                - -d
+                - research_db
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - research_user
+                - -d
+                - research_db
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999

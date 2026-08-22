@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: exam-db-ingress
+  namespace: exam
+spec:
+  podSelector:
+    matchLabels:
+      app: exam-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: exam-app
+      ports:
+        - protocol: TCP
+          port: 1521
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: exam-app-egress-to-db
+  namespace: exam
+spec:
+  podSelector:
+    matchLabels:
+      app: exam-app
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: exam-db
+      ports:
+        - protocol: TCP
+          port: 1521

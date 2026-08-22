@@ -1,0 +1,2 @@
+# Security Configuration Placeholder
+# Admission controllers, PodSecurityPolicies, or other security configurations go here.

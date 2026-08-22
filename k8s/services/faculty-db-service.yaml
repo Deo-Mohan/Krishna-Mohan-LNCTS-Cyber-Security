@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: faculty-db
+  namespace: faculty
+  labels:
+    app: faculty-db
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      targetPort: 3306
+      name: mariadb
+  selector:
+    app: faculty-db

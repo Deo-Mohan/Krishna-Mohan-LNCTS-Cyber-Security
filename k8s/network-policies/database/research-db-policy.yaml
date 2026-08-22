@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: research-db-ingress
+  namespace: research
+spec:
+  podSelector:
+    matchLabels:
+      app: research-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: research-app
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: research-app-egress-to-db
+  namespace: research
+spec:
+  podSelector:
+    matchLabels:
+      app: research-app
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: research-db
+      ports:
+        - protocol: TCP
+          port: 5432

@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: student-db-ingress
+  namespace: student
+spec:
+  podSelector:
+    matchLabels:
+      app: student-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: student-app
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: student-app-egress-to-db
+  namespace: student
+spec:
+  podSelector:
+    matchLabels:
+      app: student-app
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: student-db
+      ports:
+        - protocol: TCP
+          port: 5432

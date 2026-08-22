@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faculty-db
+  namespace: faculty
+  labels:
+    app: faculty-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faculty-db
+  template:
+    metadata:
+      labels:
+        app: faculty-db
+    spec:
+      serviceAccountName: faculty-db-sa
+      automountServiceAccountToken: false
+      containers:
+        - name: mariadb
+          image: mariadb:10.11-alpine
+          env:
+            - name: MYSQL_USER
+              value: faculty_user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: faculty-db-secret
+                  key: db-password
+            - name: MYSQL_DATABASE
+              value: faculty_db
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: faculty-db-secret
+                  key: db-root-password
+          ports:
+            - containerPort: 3306
+              name: mariadb
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          readinessProbe:
+            exec:
+              command:
+                - mariadb-admin
+                - ping
+                - -h
+                - 127.0.0.1
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - mariadb-admin
+                - ping
+                - -h
+                - 127.0.0.1
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999

@@ -1,0 +1,2 @@
+# NetworkPolicies Placeholder
+# Ingress and egress rules will be established here during Phase 3D/3E.

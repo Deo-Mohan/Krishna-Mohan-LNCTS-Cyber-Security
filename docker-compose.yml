@@ -1,0 +1,181 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # STUDENT PORTAL & DATABASE
+  # ==========================================
+  student-db:
+    image: postgres:15-alpine
+    container_name: student-db
+    environment:
+      POSTGRES_USER: student_user
+      POSTGRES_PASSWORD: ${STUDENT_DB_PASSWORD}
+      POSTGRES_DB: student_db
+    networks:
+      - student-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U student_user -d student_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  student-app:
+    build:
+      context: ./apps/student
+      dockerfile: Dockerfile
+    container_name: student-app
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      DB_HOST: student-db
+      DB_PORT: 5432
+      DB_USER: student_user
+      DB_PASSWORD: ${STUDENT_DB_PASSWORD}
+      DB_NAME: student_db
+      STRICT_DB_CHECK: "true"
+    networks:
+      - student-net
+    depends_on:
+      student-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==========================================
+  # FACULTY PORTAL & DATABASE
+  # ==========================================
+  faculty-db:
+    image: mariadb:10.11-alpine
+    container_name: faculty-db
+    environment:
+      MYSQL_USER: faculty_user
+      MYSQL_PASSWORD: ${FACULTY_DB_PASSWORD}
+      MYSQL_DATABASE: faculty_db
+      MYSQL_ROOT_PASSWORD: ${FACULTY_DB_ROOT_PASSWORD}
+    networks:
+      - faculty-net
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  faculty-app:
+    build:
+      context: ./apps/faculty
+      dockerfile: Dockerfile
+    container_name: faculty-app
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: 8082
+      DB_HOST: faculty-db
+      DB_PORT: 3306
+      DB_USER: faculty_user
+      DB_PASSWORD: ${FACULTY_DB_PASSWORD}
+      DB_NAME: faculty_db
+      STRICT_DB_CHECK: "true"
+    networks:
+      - faculty-net
+    depends_on:
+      faculty-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==========================================
+  # EXAMINATION PORTAL & DATABASE
+  # ==========================================
+  exam-db:
+    image: postgres:15-alpine
+    container_name: exam-db
+    command: postgres -p 1521
+    environment:
+      POSTGRES_USER: exam_user
+      POSTGRES_PASSWORD: ${EXAM_DB_PASSWORD}
+      POSTGRES_DB: exam_db
+    networks:
+      - exam-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p 1521 -U exam_user -d exam_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  exam-app:
+    build:
+      context: ./apps/exam
+      dockerfile: Dockerfile
+    container_name: exam-app
+    ports:
+      - "8083:8083"
+    environment:
+      PORT: 8083
+      DB_HOST: exam-db
+      DB_PORT: 1521
+      DB_USER: exam_user
+      DB_PASSWORD: ${EXAM_DB_PASSWORD}
+      DB_NAME: exam_db
+      STRICT_DB_CHECK: "true"
+    networks:
+      - exam-net
+    depends_on:
+      exam-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==========================================
+  # RESEARCH PORTAL & DATABASE
+  # ==========================================
+  research-db:
+    image: postgres:15-alpine
+    container_name: research-db
+    environment:
+      POSTGRES_USER: research_user
+      POSTGRES_PASSWORD: ${RESEARCH_DB_PASSWORD}
+      POSTGRES_DB: research_db
+    networks:
+      - research-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U research_user -d research_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  research-app:
+    build:
+      context: ./apps/research
+      dockerfile: Dockerfile
+    container_name: research-app
+    ports:
+      - "8084:8084"
+    environment:
+      PORT: 8084
+      DB_HOST: research-db
+      DB_PORT: 5432
+      DB_USER: research_user
+      DB_PASSWORD: ${RESEARCH_DB_PASSWORD}
+      DB_NAME: research_db
+      STRICT_DB_CHECK: "true"
+    networks:
+      - research-net
+    depends_on:
+      research-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+# ==========================================
+# EXPLICIT ISOLATED NETWORKS
+# ==========================================
+networks:
+  student-net:
+    driver: bridge
+  faculty-net:
+    driver: bridge
+  exam-net:
+    driver: bridge
+  research-net:
+    driver: bridge

@@ -1,0 +1,13 @@
+{
+  "name": "student-portal",
+  "version": "1.0.0",
+  "description": "Student Portal - Zero Trust Security Workload",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node tests/app.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

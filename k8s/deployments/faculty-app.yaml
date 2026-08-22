@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faculty-app
+  namespace: faculty
+  labels:
+    app: faculty-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faculty-app
+  template:
+    metadata:
+      labels:
+        app: faculty-app
+    spec:
+      serviceAccountName: faculty-app-sa
+      automountServiceAccountToken: false
+      containers:
+        - name: portal
+          image: faculty-app:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "8082"
+            - name: DB_HOST
+              value: "faculty-db"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USER
+              value: "faculty_user"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: faculty-db-secret
+                  key: db-password
+            - name: DB_NAME
+              value: "faculty_db"
+            - name: STRICT_DB_CHECK
+              value: "true"
+          ports:
+            - containerPort: 8082
+              name: http
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000

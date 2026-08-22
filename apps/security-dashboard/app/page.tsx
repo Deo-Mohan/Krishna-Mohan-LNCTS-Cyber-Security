@@ -426,6 +426,13 @@ export default function DashboardPage() {
             </div>
           )}
         </main>
+
+        {/* Footer */}
+        <footer className="border-t border-border-color py-4 px-6 text-center">
+          <p className="text-[11px] text-text-muted">
+            Built with <span className="text-rose-500">❤️</span> by <span className="font-semibold text-foreground">Krishna Mohan</span>
+          </p>
+        </footer>
       </div>
 
       {/* Control Details Modal */}

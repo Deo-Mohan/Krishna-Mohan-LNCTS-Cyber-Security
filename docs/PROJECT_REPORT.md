@@ -42,7 +42,7 @@ There is a critical need to design and implement a repeatable, secure-by-default
 
 This project was developed within the framework of the **Cisco Virtual Internship 2026 — Cyber Security** program. The core mandate was to design a **Zero-Trust Hybrid Datacenter/Cloud Security Architecture** for an educational institution. 
 
-Educational institutions manage high-value assets with different security requirements, including Student Records (PII), Faculty Profiles, Research Data (Intellectual Property), and the Examination System (highly sensitive assessment papers and grading keys). The Research Application, being public-facing and collaborative, represents the highest entry risk. The motivation for SecureHaven was to build a concrete, fully configured Kubernetes implementation that guarantees that even if the public-facing application is fully compromised, the critical Examination System and its backing databases remain isolated, unreachable, and secure.
+Educational institutions manage high-value assets with different security requirements, including Student Records (PII), Faculty Profiles, Research Data (Intellectual Property), and the Examination System (assessment papers and grading keys). The Research Application, being public-facing and collaborative, represents the highest entry risk. The motivation for SecureHaven was to build a concrete, fully configured Kubernetes implementation that guarantees that even if the public-facing application is fully compromised, the critical Examination System and its backing databases remain isolated, unreachable, and secure.
 
 ### 1.4 Objectives
 
@@ -64,9 +64,16 @@ The security hardening and verification scope of this project is focused on the 
 
 Legacy namespaces (`student`, `faculty`, and `research`) are modeled in the repository's configuration layouts but are kept unhardened to serve as a baseline comparison.
 
-### 1.6 Significance
+### 1.6 Cisco Virtual Internship Context & Problem Scenario
 
-SecureHaven serves as a practical, production-ready blueprint for securing containerized workloads. Rather than relying on high-level theoretical guidelines, this report provides concrete YAML configurations, custom Next.js monitoring logic, and automated testing tools that prove the viability of a Zero-Trust posture on Kubernetes.
+The college IT department requested a secure hybrid network architecture to support workloads distributed across a private enterprise datacenter (using OpenShift/Kind) and a public cloud (using AWS/Azure/GCP). 
+
+The target network environment is divided into five logical sub-networks or VPCs:
+* **VPC-A (Student Portal):** Houses student-facing web interfaces with standard security controls (private subnets, Security Groups, WAF/LB).
+* **VPC-B (Faculty Portal):** Provides access to faculty teaching tools and administrative apps (secured via private subnets, Security Groups, and IAM).
+* **VPC-C (Examination System):** **The primary focus of this project.** Represents the highest-security zone, requiring strict isolation and database access protection to prevent assessment tampering.
+* **VPC-D (Research Application):** An open, collaborative space with restricted egress policies to prevent data exfiltration.
+* **Shared Services VPC:** Centrally manages DNS resolution, logging, and infrastructure monitoring.
 
 ---
 
@@ -92,9 +99,16 @@ Traditional container orchestration setups treat the internal cluster network as
 | No Resource Limits | Compromised container is used for cryptomining or gets flooded with requests. | Host exhaustion; denial of service for all applications on the host. |
 | Hardcoded Credentials | Database credentials are checked into Git repositories in cleartext. | Credential exposure to unauthorized developers or public leaks. |
 
-### 2.3 Need for Zero-Trust Kubernetes Security
+### 2.3 Attack Scenario and Blast-Radius Threat Model
 
-The perimeter firewall is no longer sufficient. Under a Zero-Trust architecture, the network must be designed as if an attacker is already present inside the cluster boundary. Every access request, database query, and API call must be explicitly authenticated and authorized. SecureHaven implements this by applying least-privilege configurations at the container runtime, local disk, network routing, identity management, and resource quota layers.
+Following the Cisco problem specifications, the project's threat model assumes a multi-stage intrusion scenario:
+1. **Initial Access:** An external attacker compromises a faculty member's credentials or exploits a vulnerability in a public-facing, collaborative application (such as the **Research App**).
+2. **Workload Takeover:** The attacker establishes a foothold in the Research container. Under a default Kubernetes setup, this container would have root rights, a writable filesystem, and access to an auto-mounted ServiceAccount token.
+3. **Lateral Expansion:** The attacker attempts to run network scans (e.g., ARP sweeps, port checks) to discover neighboring database servers in the cluster.
+4. **Privilege Escalation:** The attacker tries to query the Kubernetes API using the auto-mounted token to list secrets, modify permissions, or compromise the cluster control plane.
+5. **Target Compromise:** The attacker locates the **Examination System database** and attempts to write to the grading tables or extract exam papers.
+
+**Core Principle:** A compromised application must not automatically lead to a compromised enterprise. The blast radius of the compromised Research container must be restricted at the network, filesystem, identity, and database layers to prevent any lateral reach to the Examination workloads.
 
 ---
 
@@ -103,30 +117,6 @@ The perimeter firewall is no longer sufficient. Under a Zero-Trust architecture,
 ### 3.1 SecureHaven Overview
 
 The proposed system, **SecureHaven**, is a secure-by-default Kubernetes deployment architecture paired with an interactive Next.js monitoring dashboard. The project hardens the `exam` namespace against the vulnerabilities identified in Chapter 2, achieving a verified, auditable security posture.
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          "exam" Namespace                              │
-│                                                                        │
-│  ┌───────────────────────┐                  ┌───────────────────────┐  │
-│  │       exam-app        │ ───TCP 1521────► │        exam-db        │  │
-│  │ (Node 22, UID 1000)   │                  │ (PostgreSQL, Port1521)│  │
-│  │ readOnlyRootFS: true  │                  │  readOnlyRootFS: false│  │
-│  └───────────────────────┘                  └───────────────────────┘  │
-│        │                                                               │
-│        ▼ Egress (UDP 53)                                               │
-│  ┌───────────────────────┐                                             │
-│  │       kube-dns        │ (in kube-system namespace)                  │
-│  └───────────────────────┘                                             │
-│                                                                        │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │                        security-dashboard                        │  │
-│  │     - Next.js 16 UI with CSS Variable-Based Dark/Light Themes     │  │
-│  │     - Server-side Kubernetes API client (read-only)               │  │
-│  │     - Runs on Port 3000 as UID 1000 with readOnlyRootFS           │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────────┘
-```
 
 ### 3.2 Key Features
 
@@ -165,15 +155,6 @@ SecureHaven introduces several unique features compared to standard security fra
 * **NFR-3 (Theme Consistency):** The dashboard must support dark and light modes, with theme choices persisting across page reloads without visual flicker (FOUC).
 * **NFR-4 (Secure Failure Handling):** The dashboard API must degrade gracefully and display fallback mock metrics if it cannot connect to the Kubernetes API.
 
-### 4.3 Security Requirements
-
-* **SR-1 (Non-Root Execution):** Containers must run as an unprivileged user (UID 1000) and block root operations.
-* **SR-2 (Capability Pruning):** Container runtime specifications must explicitly drop all Linux kernel capabilities.
-* **SR-3 (Write Protection):** The container root directory must be read-only.
-* **SR-4 (Network Segmentation):** All ingress and egress traffic in the `exam` namespace must default to deny unless explicitly white-listed.
-* **SR-5 (Token Safety):** The `automountServiceAccountToken` field must be set to `false` for application pods.
-* **SR-6 (API Access Control):** The dashboard must access the cluster using a dedicated ServiceAccount bound to a Role restricting permissions to read-only `get` and `list` operations in the `exam` namespace.
-
 ---
 
 ## Chapter 5 — System Architecture
@@ -181,35 +162,6 @@ SecureHaven introduces several unique features compared to standard security fra
 ### 5.1 Overall Architecture
 
 SecureHaven is deployed inside a local Kubernetes cluster. The architectural layout consists of the core components below.
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                   Kind Kubernetes Cluster                │
-│                                                          │
-│  ┌─────────────────── exam namespace ──────────────────┐ │
-│  │                                                     │ │
-│  │  ┌─────────────┐    TCP:1521    ┌──────────────┐   │ │
-│  │  │  exam-app   │ ─────────────► │   exam-db    │   │ │
-│  │  │  (Node 22)  │               │ (PostgreSQL) │   │ │
-│  │  │  Port:8083  │               │  Port:1521   │   │ │
-│  │  └─────────────┘               └──────────────┘   │ │
-│  │        │                                           │ │
-│  │        │ DNS:53                                    │ │
-│  │        ▼                                           │ │
-│  │  ┌─────────────┐                                   │ │
-│  │  │  kube-dns   │  (kube-system namespace)          │ │
-│  │  └─────────────┘                                   │ │
-│  │                                                     │ │
-│  │  ┌──────────────────────────────────────────────┐  │ │
-│  │  │         security-dashboard                    │  │ │
-│  │  │  - Next.js 16 UI with Theme Persistence       │  │ │
-│  │  │  - ServiceAccount: security-dashboard-sa     │  │ │
-│  │  │  - Role: security-dashboard-role (read-only) │  │ │
-│  │  │  - Port: 3000                                │  │ │
-│  │  └──────────────────────────────────────────────┘  │ │
-│  └─────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────┘
-```
 
 ### 5.2 Kubernetes Architecture
 
@@ -222,9 +174,19 @@ SecureHaven is deployed inside a local Kubernetes cluster. The architectural lay
 * **NetworkPolicies:** Enforce traffic rules. The default policy blocks all ingress and egress. Explicit rules allow communication from `exam-app` to `exam-db` on port 1521, and to `kube-dns` on port 53.
 * **ResourceQuota & LimitRange:** The quota limits the namespace to 4 pods, 500m CPU requests, and 256Mi memory requests. The LimitRange sets default requests and limits for containers that do not define them.
 
-### 5.3 Dashboard Telemetry Integration
+### 5.3 Microsegmentation Traffic Matrix
 
-The Next.js dashboard uses a server-side route `/api/security-status` to query the cluster state. It initializes a Kubernetes client from the local container environment, queries the Kubernetes API, filters out sensitive data, and returns a clean JSON payload to the client browser.
+To prevent lateral movement and contain compromises, the network policy configurations enforce the following flow constraints:
+
+| Source Workload | Allowed Destination | Egress Protocol / Port | Enforcement Mechanism |
+|:---|:---|:---:|:---|
+| **Student-App** | Student Database, Core DNS | TCP:5432, UDP:53 | Namespace policy isolation |
+| **Faculty-App** | Faculty Database, Core DNS | TCP:5432, UDP:53 | Namespace policy isolation |
+| **Exam-App** | Exam Database (exam-db), Core DNS | TCP:1521, UDP:53 | Calico NetworkPolicy allow-list |
+| **Research-App** | Research Database, Core DNS | TCP:5432, UDP:53 | Restricted egress policy |
+| **Any Workload** | Kubernetes API Server (`kubernetes.default`) | TCP:443 (Blocked by default) | Default-deny policy |
+
+Any cross-namespace traffic (e.g., a connection attempt from `Research-App` to `exam-db`) is dropped by the Calico network engine, isolating the examination system.
 
 ---
 
@@ -488,7 +450,67 @@ The 10-point deduction in Secrets Management reflects a limitation: Kubernetes S
 
 ---
 
-## Chapter 11 — Limitations
+## Chapter 11 — Cisco Security Technology Mapping & Enterprise Alignment
+
+To scale this deployment architecture to a hybrid enterprise environment, the native controls implemented in SecureHaven map to Cisco's cybersecurity product portfolio:
+
+| Security Layer | Implemented Native Control | Cisco Enterprise Equivalency | Functionality & Integration |
+|:---|:---|:---|:---|
+| **Network Segmentation** | Calico NetworkPolicies | **Cisco Secure Workload** (formerly Tetration) | Enforces microsegmentation policies based on application telemetry and behavior analysis. |
+| **Perimeter & Ingress** | Kubernetes Ingress & Services | **Cisco Secure Firewall** (FTD) | Inspects incoming traffic, enforces IPS policies, and filters malicious requests. |
+| **Workload Identity** | ServiceAccounts & RBAC | **Cisco ISE** (Identity Services Engine) | Manages identity authorization and enforces access policies for users and endpoints. |
+| **Remote Access** | Local Admin access routes | **Cisco Secure Access** (ZTNA) | Replaces traditional VPNs with application-level access control based on device posture and MFA. |
+| **Threat Intelligence** | Local vulnerability auditing | **Cisco Talos** | Feeds real-time threat intelligence to block known malicious IPs and domain lookups. |
+| **Flow Telemetry** | API monitoring dashboard | **Cisco Secure Network Analytics** (Stealthwatch) | Analyzes network flow logs to detect anomalous behaviors, such as lateral sweeps or data exfiltration. |
+
+This mapping demonstrates that the Zero-Trust controls established at the container level within this local cluster are aligned with enterprise-grade security architectures.
+
+---
+
+## Chapter 12 — Multi-Stakeholder Responsibilities & DevSecOps Workflow
+
+### 12.1 Multi-Stakeholder Matrix
+
+Implementing a secure hybrid data center requires collaboration across engineering teams. SecureHaven defines the responsibility matrix below based on the Cisco guidelines:
+
+* **Application Developer:** Secures application code, manages internal dependencies, prunes package files, and configures environment-injected secrets (e.g. database credentials).
+* **Security Engineer:** Creates threat models, defines security requirements, audits configurations, and manages compliance policies.
+* **Network Designer:** Manages routing, constructs network segments (VPCs/VNETs), and configures firewall edge rules.
+* **Kubernetes Platform Engineer:** Deploys and manages clusters, configures RBAC policies, manages namespaces, and maintains the CNI network engine.
+* **Identity & Access Management (IAM) Team:** Manages federated identity, authentication (SSO/MFA), and service account access rules.
+* **SOC / SIEM Analysts:** Monitors logs, analyzes security telemetry, and manages incident response workflows.
+
+### 12.2 Secure Application Deployment Workflow
+
+SecureHaven follows a 10-step secure deployment workflow:
+
+```
+[Requirements & Risk Analysis] ──► [Application Classification] ──► [Cloud Placement Design]
+                                                                            │
+                                                                            ▼
+[Define IAM & Service Identities] ◄── [Define Security Groups] ◄── [Create Network Segment]
+               │
+               ▼
+[Configure Namespaces & NetworkPolicies] ──► [Security Testing & Approval] ──► [Prod Deployment]
+                                                                                     │
+                                                                                     ▼
+                                                                        [Continuous Monitoring]
+```
+
+1. **Requirements & Risk Analysis:** Establish security baselines and perform a threat audit.
+2. **Application Classification:** Categorize workloads by risk and data sensitivity.
+3. **Choose Data Center/Cloud Placement:** Select hosting zones (on-premises OpenShift vs. public cloud EKS/AKS).
+4. **Create VPC/VLAN/Network Segment:** Construct isolated subnets and disable routing between different zones.
+5. **Define IAM, RBAC, and Service Identities:** Create dedicated ServiceAccounts with least-privilege permissions.
+6. **Define Security Groups and Firewall Rules:** Apply port-level ingress and egress restrictions.
+7. **Define Kubernetes Namespace and NetworkPolicies:** Enforce default-deny and declare explicit allow-list connection paths.
+8. **Security Testing and Approval:** Run automated scanning suites to verify the posture before deployment.
+9. **Production Deployment:** Deploy workloads to the cluster.
+10. **Continuous Monitoring and Periodic Review:** Collect audit logs and security telemetry to identify anomalies.
+
+---
+
+## Chapter 13 — Limitations
 
 1. **Vulnerability Scanning Limitation:** Local testing did not include a binary container image scanner (such as Trivy or Grype).
 2. **Namespace Hardening Scope:** Security hardening is restricted to the `exam` namespace. The `student`, `faculty`, and `research` namespaces run in legacy, unhardened states.
@@ -498,7 +520,7 @@ The 10-point deduction in Secrets Management reflects a limitation: Kubernetes S
 
 ---
 
-## Chapter 12 — Future Enhancements
+## Chapter 14 — Future Enhancements
 
 1. **Vulnerability Scanner Integration:** Integrate Trivy or Grype scanning into the container image build pipeline.
 2. **Secrets Manager Integration:** Integrate a dedicated secret manager (like HashiCorp Vault) to handle database credentials.
@@ -508,15 +530,15 @@ The 10-point deduction in Secrets Management reflects a limitation: Kubernetes S
 
 ---
 
-## Chapter 13 — Conclusion
+## Chapter 15 — Conclusion
 
 SecureHaven demonstrates the practical implementation of Zero-Trust security principles on Kubernetes. The hardened configuration achieved a verified security score of 96/100, passing all 13 primary runtime validation checks. The monitoring dashboard provides real-time visibility into the cluster state without exposing credentials to the client browser, demonstrating how security configuration and observability can be combined.
 
 ---
 
-## Chapter 14 — Developer Contribution and Implementation Challenges
+## Chapter 16 — Developer Contribution and Implementation Challenges
 
-### 14.1 Developer Contribution Details
+### 16.1 Developer Contribution Details
 
 As the primary developer of the SecureHaven project, my contributions spanned security engineering, backend API development, and frontend interface design:
 * **Security Engineering:** Created the Kubernetes manifests, including SecurityContexts, NetworkPolicies, ServiceAccounts, and resource limits for the workloads.
@@ -524,7 +546,7 @@ As the primary developer of the SecureHaven project, my contributions spanned se
 * **Frontend Design:** Designed and developed the glassmorphic user interface using Tailwind CSS and React, implementing a dark and light theme switching system.
 * **Automation Testing:** Wrote the test runners `run_tests.js` and `container_tests.js` to validate image configurations and network isolation boundaries.
 
-### 14.2 Implementation Challenges & Resolutions
+### 16.2 Implementation Challenges & Resolutions
 
 #### Challenge 1: Hydration Mismatch & FOUC in Next.js Theme System
 * **Problem:** Implementing the dark and light theme toggle caused a Flash of Unstyled Content (FOUC) on page reload, as well as React hydration warnings because the server-rendered HTML did not match the client-side theme state stored in `localStorage`.
@@ -540,9 +562,9 @@ As the primary developer of the SecureHaven project, my contributions spanned se
 
 ---
 
-## Chapter 15 — Real-World Application and Global Impact
+## Chapter 17 — Real-World Application and Global Impact
 
-### 15.1 Real-World Significance
+### 17.1 Real-World Significance
 
 SecureHaven demonstrates how to implement Zero-Trust principles in microservice architectures:
 * **Lateral Movement Containment:** In the event of a container compromise, the network and filesystem controls restrict the attacker from moving laterally to access other database services.

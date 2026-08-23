@@ -672,19 +672,25 @@ node run_tests.js
 node tests/container/container_tests.js
 ```
 
-## Appendix C — Project File Listing
+## Appendix C — Project File Listing and Code Repository Navigation
 
-| Path | Purpose |
+Since this report is exported to DOCX/PDF, the local file links are not directly browsable. You can access the complete open-source codebase and live configuration files on the official GitHub repository:
+**Repository URL:** [https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security)
+
+Below is the directory map with direct GitHub links and comprehensive descriptions for each component:
+
+| Resource Path / GitHub URL | Component Description |
 |:---|:---|
-| `SECURITY.md` | Security audit report |
-| `README.md` | Project overview and quickstart |
-| `docker-compose.yml` | Multi-service isolated development |
-| `run_tests.js` | Automated integrity test suite |
-| `apps/exam/` | Examination portal source |
-| `apps/security-dashboard/` | Security dashboard source |
-| `k8s/deployments/` | Kubernetes deployment manifests |
-| `k8s/rbac/` | ServiceAccount definitions |
-| `k8s/network-policies/` | NetworkPolicy manifests |
-| `k8s/config/` | Kubernetes Secrets (dev only) |
-| `k8s/services/` | Service manifests |
-| `docs/` | 28 architecture and review documents |
+| [`SECURITY.md`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/blob/main/SECURITY.md) | **Comprehensive Security Audit Report:** Details the Phase 0 container and network audit, defining security compliance baselines. |
+| [`README.md`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/blob/main/README.md) | **Project Entrypoint & Quickstart:** Contains developer badges, system architectures, deployment setups, and automated testing command scripts. |
+| [`docker-compose.yml`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/blob/main/docker-compose.yml) | **Local Isolated Compose environment:** Used to run mock application services and database boundary network checks locally. |
+| [`run_tests.js`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/blob/main/run_tests.js) | **Automated Integrity Test Suite:** JavaScript test runner performing regex secrets scanning, Dockerfile directives audit, and port bindings verification. |
+| [`apps/exam/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/apps/exam) | **Examination Portal Workload:** Main Node.js express web application source code and its production container Dockerfile. |
+| [`apps/security-dashboard/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/apps/security-dashboard) | **Security Observability Portal:** Full Next.js dashboard codebase, featuring React components, theme providers, and API route handlers. |
+| [`k8s/deployments/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/k8s/deployments) | **Kubernetes Workload Manifests:** Contains YAML configurations for `exam-app`, `exam-db`, and `security-dashboard` with active SecurityContexts. |
+| [`k8s/rbac/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/k8s/rbac) | **Kubernetes IAM & RBAC manifests:** Declares dedicated ServiceAccounts, monitoring Roles, and RoleBindings for least-privilege control. |
+| [`k8s/network-policies/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/k8s/network-policies) | **Microsegmentation Rules:** YAML manifests setting default-deny boundaries and whitelisting app-to-database and CoreDNS egress routes. |
+| [`k8s/config/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/k8s/config) | **Kubernetes Configuration Secrets:** Stores base64-encoded development database credential secrets (`exam-db-secret`). |
+| [`k8s/services/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/k8s/services) | **Kubernetes Network Services:** Exposes internal ClusterIP mappings for databases and frontend workloads. |
+| [`docs/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/docs) | **Documentation Folder:** Contains B.Tech project reports, testing reports, and the 28+ historical review and design documents. |
+

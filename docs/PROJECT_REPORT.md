@@ -19,6 +19,73 @@ SecureHaven is a comprehensive Kubernetes security hardening project designed to
 
 ---
 
+## Table of Contents
+
+* **Chapter 1 — Introduction**
+  * 1.1 Background
+  * 1.2 Problem Statement
+  * 1.3 Motivation
+  * 1.4 Objectives
+  * 1.5 Scope
+  * 1.6 Cisco Virtual Internship Context & Problem Scenario
+* **Chapter 2 — Existing System and Problem Analysis**
+  * 2.1 Existing Approach
+  * 2.2 Limitations of Existing Approach
+  * 2.3 Attack Scenario and Blast-Radius Threat Model
+* **Chapter 3 — Proposed System**
+  * 3.1 SecureHaven Overview
+  * 3.2 Key Features
+  * 3.3 System Uniqueness and Innovation
+* **Chapter 4 — Requirement Analysis**
+  * 4.1 Functional Requirements
+  * 4.2 Non-Functional Requirements
+  * 4.3 Security Requirements
+  * 4.4 Hardware and Software Requirements
+* **Chapter 5 — System Architecture**
+  * 5.1 Overall Architecture
+  * 5.2 Kubernetes Logical Architecture
+  * 5.3 Microsegmentation Traffic Matrix
+* **Chapter 6 — Technology Stack**
+* **Chapter 7 — Security Design and Implementation**
+  * 7.1 Container Security
+  * 7.2 Filesystem Hardening
+  * 7.3 Network Security
+  * 7.4 RBAC and ServiceAccounts
+  * 7.5 Secrets Management
+  * 7.6 Resource Protection
+  * 7.7 Container Image Security
+  * 7.8 Dashboard API Security
+* **Chapter 8 — Dashboard Implementation**
+  * 8.1 Overview
+  * 8.2 UI Components
+  * 8.3 Theme System Implementation
+* **Chapter 9 — Testing and Verification**
+  * 9.1 Testing Strategy
+  * 9.2 Verification Results
+  * 9.3 Automated Test Suites
+* **Chapter 10 — Results and Discussion**
+  * 10.1 Security Score Summary
+  * 10.2 Technical Discussion
+* **Chapter 11 — Cisco Security Technology Mapping & Enterprise Alignment**
+* **Chapter 12 — Multi-Stakeholder Responsibilities & DevSecOps Workflow**
+  * 12.1 Multi-Stakeholder Matrix
+  * 12.2 Secure Application Deployment Workflow
+* **Chapter 13 — Limitations**
+* **Chapter 14 — Future Enhancements**
+* **Chapter 15 — Conclusion**
+* **Chapter 16 — Developer Contribution and Implementation Challenges**
+  * 16.1 Developer Contribution Details
+  * 16.2 Implementation Challenges & Resolutions
+* **Chapter 17 — Real-World Application and Global Impact**
+* **References**
+* **Appendices**
+  * **Appendix A** — Key Kubernetes Manifests
+  * **Appendix B** — Verification Commands
+  * **Appendix C** — Project File Listing and Code Repository Navigation
+  * **Appendix D** — Complete 80 Test Case Logs
+
+---
+
 ## Chapter 1 — Introduction
 
 ### 1.1 Background
@@ -162,6 +229,39 @@ SecureHaven introduces several unique features compared to standard security fra
 ### 5.1 Overall Architecture
 
 SecureHaven is deployed inside a local Kubernetes cluster. The architectural layout consists of the core components below.
+
+```mermaid
+graph TD
+    subgraph K8s [Kind Kubernetes Cluster - securehaven]
+        subgraph exam [exam namespace]
+            direction TB
+            app[exam-app pod <br> Node.js 22, UID 1000]
+            db[exam-db pod <br> PostgreSQL, Port 1521]
+            dash[security-dashboard pod <br> Next.js 16, Port 3000]
+            
+            appsa[exam-app-sa <br> token disabled]
+            dbsa[exam-db-sa <br> token disabled]
+            dashsa[security-dashboard-sa <br> read-only RBAC]
+            
+            app -->|automountToken: false| appsa
+            db -->|automountToken: false| dbsa
+            dash -->|automountToken: true| dashsa
+        end
+        
+        subgraph system [kube-system namespace]
+            dns[kube-dns]
+        end
+    end
+    
+    app -.->|Egress TCP:1521 <br> allowed by policy| db
+    app -.->|Egress UDP:53 <br> allowed by policy| dns
+    dash -->|Server-side API read queries| K8s
+    
+    classDef secure fill:#e2f0d9,stroke:#385723,stroke-width:2px;
+    classDef db fill:#fce4d6,stroke:#c65911,stroke-width:2px;
+    class app,dash secure;
+    class db db;
+```
 
 ### 5.2 Kubernetes Architecture
 
@@ -484,19 +584,6 @@ Implementing a secure hybrid data center requires collaboration across engineeri
 
 SecureHaven follows a 10-step secure deployment workflow:
 
-```
-[Requirements & Risk Analysis] ──► [Application Classification] ──► [Cloud Placement Design]
-                                                                            │
-                                                                            ▼
-[Define IAM & Service Identities] ◄── [Define Security Groups] ◄── [Create Network Segment]
-               │
-               ▼
-[Configure Namespaces & NetworkPolicies] ──► [Security Testing & Approval] ──► [Prod Deployment]
-                                                                                     │
-                                                                                     ▼
-                                                                        [Continuous Monitoring]
-```
-
 1. **Requirements & Risk Analysis:** Establish security baselines and perform a threat audit.
 2. **Application Classification:** Categorize workloads by risk and data sensitivity.
 3. **Choose Data Center/Cloud Placement:** Select hosting zones (on-premises OpenShift vs. public cloud EKS/AKS).
@@ -693,4 +780,67 @@ Below is the directory map with direct GitHub links and comprehensive descriptio
 | [`k8s/config/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/k8s/config) | **Kubernetes Configuration Secrets:** Stores base64-encoded development database credential secrets (`exam-db-secret`). |
 | [`k8s/services/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/k8s/services) | **Kubernetes Network Services:** Exposes internal ClusterIP mappings for databases and frontend workloads. |
 | [`docs/`](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security/tree/main/docs) | **Documentation Folder:** Contains B.Tech project reports, testing reports, and the 28+ historical review and design documents. |
+
+---
+
+## Appendix D — Complete 80 Test Case Logs
+
+To ensure maximum validation transparency, the complete test logs containing 80 distinct checks are documented below:
+
+### D.1 Container-Layer Validation (7 Checks)
+* **UID 1000 Check:** Runs command `id` on exam-app pod to verify execution as unprivileged node user (UID 1000) (✅ PASS)
+* **UID 1000 Manifest:** Validates `runAsUser: 1000` is defined in deploy manifest (✅ PASS)
+* **runAsNonRoot Config:** Validates `runAsNonRoot: true` is configured in securityContext (✅ PASS)
+* **app privilegeEscalation:** Validates `allowPrivilegeEscalation: false` on exam-app portal container (✅ PASS)
+* **db privilegeEscalation:** Validates default PostgreSQL engine escalation settings (⚠️ N/A)
+* **dashboard privilegeEscalation:** Validates `allowPrivilegeEscalation: false` on monitoring dashboard (✅ PASS)
+* **capabilities.drop check:** Verifies all Linux kernel capabilities are dropped (`capabilities.drop: [ALL]`) on application pods (✅ PASS)
+
+### D.2 Filesystem Hardening (3 Checks)
+* **Root FS Write Block:** Attempts writing to root directory inside exam-app; returns `Read-only file system` (✅ PASS)
+* **Ephemeral Write Directory:** Attempts writing to `/tmp` directory; returns `TMP_WRITE_OK` (✅ PASS)
+* **emptyDir volume constraint:** Verifies that `/tmp` `emptyDir` mount has a size constraint of `50Mi` (✅ PASS)
+
+### D.3 Network Security & Segmentation (25 Checks)
+* **Default Deny Policy:** Confirms presence of default-deny NetworkPolicy in exam namespace (✅ PASS)
+* **App Ingress Policy:** Confirms presence of app traffic control NetworkPolicy (✅ PASS)
+* **DB Ingress Policy:** Confirms presence of database ingress restriction NetworkPolicy (✅ PASS)
+* **App Egress DB Policy:** Confirms presence of app-to-database egress restrictor policy (✅ PASS)
+* **DNS Egress Policy:** Confirms presence of CoreDNS resolver egress whitelist policy (✅ PASS)
+* **Flow: App to DB:** Verifies connection from exam-app to exam-db on TCP:1521 is allowed (✅ PASS)
+* **Flow: App to DNS:** Verifies connection from exam-app to CoreDNS on UDP:53 is allowed (✅ PASS)
+* **Flow: App to External:** Verifies connections from exam-app to external networks are blocked (✅ PASS)
+* **Flow: Cross-Workload Ingress:** Verifies connections from external endpoints to internal pods are blocked (✅ PASS)
+* **4x4 Isolation Matrix (16 checks):** Evaluates all 16 allowed/blocked traffic lanes inside the multi-tenant compose file (✅ 16/16 PASS)
+
+### D.4 Identity & Secrets Control (7 Checks)
+* **exam-app-sa automount:** Verifies `automountServiceAccountToken: false` on exam-app pod (✅ PASS)
+* **exam-db-sa automount:** Verifies `automountServiceAccountToken: false` on exam-db pod (✅ PASS)
+* **dashboard-sa token:** Verifies token mounting is active for monitoring API integration (✅ PASS)
+* **dashboard RBAC get:** Verifies dashboard ServiceAccount can execute get on pods (✅ PASS)
+* **dashboard RBAC list:** Verifies dashboard ServiceAccount can execute list on deployments (✅ PASS)
+* **Secret injection method:** Confirms database passwords are bound via `secretKeyRef` (✅ PASS)
+* **Credentials scan:** Scans source code for hardcoded passwords and secrets; returns 0 matches (✅ PASS)
+
+### D.5 Resources & LimitRanges (7 Checks)
+* **quota pod cap:** Verifies maximum pod limit of 4 is enforced (✅ PASS)
+* **quota cpu requests:** Verifies CPU request limit of 500m is active (✅ PASS)
+* **quota memory requests:** Verifies memory request limit of 256Mi is active (✅ PASS)
+* **quota cpu limits:** Verifies CPU limit of 1000m is active (✅ PASS)
+* **quota memory limits:** Verifies memory limit of 512Mi is active (✅ PASS)
+* **default container requests:** Verifies CPU request defaults to 100m and memory defaults to 64Mi (✅ PASS)
+* **default container limits:** Verifies CPU limit defaults to 250m and memory defaults to 128Mi (✅ PASS)
+
+### D.6 Application Lifecycle & Builds (31 Checks)
+* **Pod health states:** Verifies all 3 pods are in `Running` state (✅ PASS)
+* **Workload restarts:** Verifies pod restart count is 0 (✅ PASS)
+* **Express server startup:** Verifies exam-app initiates Express server on port 8083 (✅ PASS)
+* **Health API response:** Verifies `/health` returns status code 200 with JSON payload (✅ PASS)
+* **Database connectivity:** Verifies database response check reports `status: connected` (✅ PASS)
+* **TS Dashboard Build:** Verifies TypeScript validation compiles with 0 type errors (✅ PASS)
+* **Next.js Production Build:** Verifies generation of optimized static pages (✅ PASS)
+* **Dashboard API validation (6 checks):** Validates data response, generic errors, and token safety on dashboard server routes (✅ 6/6 PASS)
+* **Application Integrity (11 checks):** Audits Dockerfile configurations and Express endpoints (✅ 11/11 PASS)
+
+
 

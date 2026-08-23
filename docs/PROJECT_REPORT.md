@@ -13,7 +13,7 @@
 
 ## Abstract
 
-SecureHaven is a comprehensive Kubernetes security hardening project designed to establish a defense-in-depth, Zero-Trust security posture for an academic institution's examination portal. Developed on a local multi-node Kubernetes cluster (Kind), this project isolates and hardens critical web application workloads inside a dedicated namespace (`exam`) using Calico CNI for network segmentation. By enforcing strict security contexts (non-root execution, Linux capability dropping, read-only root filesystems) and resource boundaries (ResourceQuotas, LimitRanges), the system effectively neutralizes container-escape and lateral-movement threats. Real-time observability is achieved through a glassmorphic Next.js security monitoring dashboard that communicates with the Kubernetes API server-side via a dedicated, read-only ServiceAccount, ensuring no cluster credentials leak to client browsers. Testing and validation checks (including automated secrets scanning, Dockerfile static analysis, and network connectivity matrix tests) verify that the system achieves an overall security score of 96/100, passing 13 out of 13 primary runtime verification checks.
+This project, SecureHaven, is focused on building a secure Kubernetes environment for a college exam portal using Zero-Trust security principles. I set up a multi-node Kubernetes cluster using Kind and isolated the sensitive exam workloads inside a dedicated namespace. To enforce strong security, I configured Calico network policies to block all traffic by default, only allowing essential communication between the web app and the database. I also hardened the containers by making sure they do not run as root, dropping all administrative Linux capabilities, and locking the container filesystem to read-only. For monitoring, I built a Next.js dashboard that securely checks the cluster status from the server side, keeping cluster tokens safe from browser-side exposure. The system was validated using custom test scripts, scoring 96 out of 100 on security benchmarks and passing all 13 runtime verification tests.
 
 **Keywords:** Kubernetes, Zero-Trust, Container Security, NetworkPolicy, RBAC, Microsegmentation, Security Dashboard, Next.js, Docker, Calico CNI, Cybersecurity Engineering
 
@@ -22,213 +22,220 @@ SecureHaven is a comprehensive Kubernetes security hardening project designed to
 ## Table of Contents
 
 * **Chapter 1 — Introduction**
-  * 1.1 Background
-  * 1.2 Problem Statement
-  * 1.3 Motivation
-  * 1.4 Objectives
-  * 1.5 Scope
-  * 1.6 Cisco Virtual Internship Context & Problem Scenario
+  * 1.1 Project Overview
+  * 1.2 The Core Problem
+  * 1.3 Why This Project Matters
+  * 1.4 Main Objectives
+  * 1.5 What is Covered (Scope)
+  * 1.6 Cisco Internship Context & Case Study
 * **Chapter 2 — Existing System and Problem Analysis**
-  * 2.1 Existing Approach
-  * 2.2 Limitations of Existing Approach
+  * 2.1 Standard Kubernetes Configurations
+  * 2.2 Why Default Settings are Risky
   * 2.3 Attack Scenario and Blast-Radius Threat Model
 * **Chapter 3 — Proposed System**
-  * 3.1 SecureHaven Overview
+  * 3.1 Introducing SecureHaven
   * 3.2 Key Features
-  * 3.3 System Uniqueness and Innovation
+  * 3.3 What Makes This Project Unique
 * **Chapter 4 — Requirement Analysis**
-  * 4.1 Functional Requirements
-  * 4.2 Non-Functional Requirements
-  * 4.3 Security Requirements
-  * 4.4 Hardware and Software Requirements
+  * 4.1 What the System Must Do (Functional Requirements)
+  * 4.2 How the System Should Perform (Non-Functional Requirements)
+  * 4.3 Security Rules
+  * 4.4 Hardware and Software Used
 * **Chapter 5 — System Architecture**
-  * 5.1 Overall Architecture
-  * 5.2 Kubernetes Logical Architecture
-  * 5.3 Microsegmentation Traffic Matrix
+  * 5.1 High-Level Architecture
+  * 5.2 Kubernetes Setup Details
+  * 5.3 Network Traffic Access List
 * **Chapter 6 — Technology Stack**
 * **Chapter 7 — Security Design and Implementation**
-  * 7.1 Container Security
-  * 7.2 Filesystem Hardening
-  * 7.3 Network Security
-  * 7.4 RBAC and ServiceAccounts
-  * 7.5 Secrets Management
-  * 7.6 Resource Protection
-  * 7.7 Container Image Security
-  * 7.8 Dashboard API Security
+  * 7.1 Hardening the Containers
+  * 7.2 Read-Only Filesystem Setup
+  * 7.3 Calico Network Policies
+  * 7.4 RBAC Roles and ServiceAccounts
+  * 7.5 Managing Secrets
+  * 7.6 Setting Resource Limits
+  * 7.7 Container Image Decisions
+  * 7.8 Dashboard Security Design
 * **Chapter 8 — Dashboard Implementation**
-  * 8.1 Overview
-  * 8.2 UI Components
-  * 8.3 Theme System Implementation
+  * 8.1 Dashboard Layout
+  * 8.2 Frontend Components
+  * 8.3 Theme Flickering Fix (FOUC)
 * **Chapter 9 — Testing and Verification**
-  * 9.1 Testing Strategy
-  * 9.2 Verification Results
-  * 9.3 Automated Test Suites
+  * 9.1 How I Tested the Project
+  * 9.2 Real-world Verification Results
+  * 9.3 Custom Automated Test Scripts
 * **Chapter 10 — Results and Discussion**
-  * 10.1 Security Score Summary
-  * 10.2 Technical Discussion
-* **Chapter 11 — Cisco Security Technology Mapping & Enterprise Alignment**
-* **Chapter 12 — Multi-Stakeholder Responsibilities & DevSecOps Workflow**
-  * 12.1 Multi-Stakeholder Matrix
-  * 12.2 Secure Application Deployment Workflow
-* **Chapter 13 — Limitations**
-* **Chapter 14 — Future Enhancements**
+  * 10.1 Score Breakdown
+  * 10.2 Technical Observations
+* **Chapter 11 — Cisco Security Technology Mapping**
+* **Chapter 12 — Teams and Secure Deployment Steps**
+  * 12.1 Engineering Roles
+  * 12.2 Deployment Workflow
+* **Chapter 13 — Current Limitations**
+* **Chapter 14 — Future Work**
 * **Chapter 15 — Conclusion**
-* **Chapter 16 — Developer Contribution and Implementation Challenges**
-  * 16.1 Developer Contribution Details
-  * 16.2 Implementation Challenges & Resolutions
-* **Chapter 17 — Real-World Application and Global Impact**
+* **Chapter 16 — My Contributions & Technical Challenges Solved**
+  * 16.1 What I Worked On
+  * 16.2 Major Bugs I Faced and How I Fixed Them
+* **Chapter 17 — Real-World Use Cases**
 * **References**
 * **Appendices**
-  * **Appendix A** — Key Kubernetes Manifests
-  * **Appendix B** — Verification Commands
-  * **Appendix C** — Project File Listing and Code Repository Navigation
-  * **Appendix D** — Complete 80 Test Case Logs
+  * **Appendix A** — Key Configuration Manifests
+  * **Appendix B** — Testing Commands Used
+  * **Appendix C** — Code Folder Map and GitHub Repository Links
+  * **Appendix D** — Full 80 Test Case Logs
 
 ---
 
 ## Chapter 1 — Introduction
 
-### 1.1 Background
+### 1.1 Project Overview
 
-Modern application environments have rapidly shifted from monoliths running on bare-metal servers to containerized microservices running on cloud-managed platforms like Kubernetes. While this shift accelerates deployment speed and scalability, it dramatically increases the internal attack surface of an organization. 
+These days, organizations are moving away from running applications on single large servers. Instead, they package applications into small, independent parts called containers and run them using Kubernetes. This approach makes it easy to scale systems up or down, but it also introduces new security risks. 
 
-In a traditional "castle-and-moat" network architecture, perimeter firewalls defend the network boundary. However, once an attacker gains access to any internal node—often through a public-facing application vulnerability like Remote Code Execution (RCE) or a compromised dependency—they encounter a flat, unrestricted internal network. From there, they can move laterally to access databases, capture service account API tokens, and escalate privileges to compromise the host node or the entire Kubernetes control plane.
+In the old days, companies relied on perimeter firewalls to protect their networks. If a hacker got past the firewall, they had access to everything inside the network. This project focuses on applying the "Zero-Trust" model ("Never Trust, Always Verify") directly inside a Kubernetes cluster, making sure that every service is isolated and secured.
 
-### 1.2 Problem Statement
+### 1.2 The Core Problem
 
-Default Kubernetes installations are inherently open and unhardened:
-* **Root Execution:** By default, containers run as the root user. If a container is escaped, the attacker inherits root access on the underlying host node.
-* **Flat Internal Networking:** Pods within a cluster can communicate freely with any other pod across namespaces by default, facilitating lateral movement.
-* **Over-Privileged ServiceAccounts:** Pods auto-mount a default ServiceAccount token that can contain permissions to read secrets or manage other pods.
-* **Writable Filesystems:** Writable root filesystems allow attackers to download payloads, install web shells, or patch binaries.
-* **No Resource Restrictions:** A compromised or misconfigured container can consume unlimited CPU and memory, starving other workloads and causing a Denial-of-Service (DoS) state.
+By default, Kubernetes is designed to be highly cooperative rather than secure:
+* Containers run as the administrator (root user) by default. If a hacker exploits a bug in the app, they can take control of the entire host server.
+* Any container inside the cluster can talk to any other container across namespaces.
+* Applications are automatically given service tokens that let them talk to the Kubernetes API, which could allow a hacker to gain admin rights.
+* If filesystems are left writable, hackers can download and run malicious scripts easily.
+* If we do not restrict CPU and memory usage, a single compromised container can hog all the resources, crashing other critical services.
 
-There is a critical need to design and implement a repeatable, secure-by-default Kubernetes architecture applying Zero-Trust principles ("Never Trust, Always Verify") to contain breaches at the workload boundary while maintaining real-time security observability.
+### 1.3 Why This Project Matters
 
-### 1.3 Motivation
+I built this project during my **Cisco Virtual Internship 2026 — Cyber Security**. The goal was to design a secure network architecture for a college. 
 
-This project was developed within the framework of the **Cisco Virtual Internship 2026 — Cyber Security** program. The core mandate was to design a **Zero-Trust Hybrid Datacenter/Cloud Security Architecture** for an educational institution. 
+Colleges have many different systems: public-facing websites, student portals, research systems, and examination databases. The research system is usually open and collaborative, which makes it a likely target for attacks. The objective of SecureHaven is to build a setup where even if a public application gets compromised, the high-security exam database remains protected and isolated.
 
-Educational institutions manage high-value assets with different security requirements, including Student Records (PII), Faculty Profiles, Research Data (Intellectual Property), and the Examination System (assessment papers and grading keys). The Research Application, being public-facing and collaborative, represents the highest entry risk. The motivation for SecureHaven was to build a concrete, fully configured Kubernetes implementation that guarantees that even if the public-facing application is fully compromised, the critical Examination System and its backing databases remain isolated, unreachable, and secure.
+### 1.4 Main Objectives
 
-### 1.4 Objectives
+* **Workload Isolation:** Make sure containers run as non-root users and drop unnecessary capabilities.
+* **Filesystem Lockdown:** Lock down the container filesystems to read-only, allowing write access only to `/tmp`.
+* **Network Segmentation:** Enforce default-deny network rules and only whitelist necessary communication paths.
+* **Access Control:** Disable automatic service account tokens and use read-only roles for monitoring.
+* **Secure Configurations:** Stop hardcoding passwords and use Kubernetes Secrets to inject credentials at runtime.
+* **Resource Limits:** Configure quotas to prevent single containers from exhausting the cluster's resources.
+* **Security Dashboard:** Create a Next.js dashboard that safely queries the cluster status from the server side without exposing access credentials.
+* **Testing:** Create validation scripts to confirm our security settings work under real attacks.
 
-* **Workload Sandboxing:** Implement container-layer hardening to ensure no processes run as root, all Linux kernel capabilities are dropped, and privilege escalation is blocked.
-* **Filesystem Hardening:** Enforce read-only root filesystems across containers, providing ephemeral write exceptions only where necessary.
-* **Network Microsegmentation:** Deploy namespace-scoped default-deny NetworkPolicies and construct explicit, port-restricted allow-lists.
-* **Least-Privilege Access Control:** Create dedicated Kubernetes ServiceAccounts with token auto-mounting disabled on workloads, and configure read-only, namespace-scoped RBAC roles for monitoring tools.
-* **Dynamic Secrets Injection:** Eliminate hardcoded database credentials by injecting credentials dynamically at runtime using Kubernetes Secrets.
-* **Resource Exhaustion Defense:** Enforce ResourceQuotas and LimitRanges at the namespace and container levels to protect against Denial-of-Service attacks.
-* **Observability Pipeline:** Construct a Next.js-based security dashboard that queries the cluster status securely from the server side and displays live compliance metrics.
-* **Automated Verification:** Write testing scripts to validate image configurations, run network isolation tests, and audit source code for secrets.
+### 1.5 What is Covered (Scope)
 
-### 1.5 Scope
+This project focuses on securing the `exam` namespace in a local multi-node Kind cluster. I set up and hardened three main components:
+1. `exam-app`: The Node.js application server.
+2. `exam-db`: The PostgreSQL database server.
+3. `security-dashboard`: The Next.js dashboard used to monitor security metrics.
 
-The security hardening and verification scope of this project is focused on the `exam` namespace within the local `securehaven` Kubernetes cluster. The workloads hardened are:
-1. `exam-app`: Node.js-based web frontend and API server (Port 8083).
-2. `exam-db`: PostgreSQL database server hosting examination questions (Port 1521).
-3. `security-dashboard`: Next.js-based administration portal monitoring cluster security (Port 3000).
+Other college services (student, faculty, and research namespaces) are kept in their default, unhardened state to demonstrate the differences in security posture.
 
-Legacy namespaces (`student`, `faculty`, and `research`) are modeled in the repository's configuration layouts but are kept unhardened to serve as a baseline comparison.
+### 1.6 Cisco Internship Context & Student Problem Statement
 
-### 1.6 Cisco Virtual Internship Context & Problem Scenario
+This project is directly designed around the official Cisco Virtual Internship 2026 Student Problem Statement for Cyber Security:
 
-The college IT department requested a secure hybrid network architecture to support workloads distributed across a private enterprise datacenter (using OpenShift/Kind) and a public cloud (using AWS/Azure/GCP). 
+> "Many applications are hosted in the enterprise datacenter as well as public cloud today. Most applications and "workloads" are hybrid - meaning that the application uses services in both the private data center and public cloud. Since data has to exit the private data center to reach the public cloud, there must be strong network security and segmentation. The cloud security functionality (such as aws' security groups and IAM) form a significant factor in providing this security.
+> 
+> Modern applications also use kubernetes orchestrated containers and microservices to provide highly scalable, cloud native services. These kubernetes orchestrated applications can be present in both private data centers using technology such as openshift or in public cloud using GKE, EKS or AKE.
+> 
+> When a new application has to be deployed, multiple stakeholders are now needed - application developers, network designers, kubernetes platform engineers, etc.
+> 
+> Faculty members also now work flexibly from home or campus, and require uninterrupted, secure access to teaching tools, research repositories, and internal services to applications that are running in hybrid mode - private datacenter services connected to services in the public cloud.
+> 
+> Your task is to design a secure hybrid datacenter network architecture that supports applications connecting or using services between private datacenter and public cloud. How should IAM function? What kind of security groups must be utilized? How can applications be segmented in VPCs such that we can mitigate any attack on a single application from spreading into other applications, VPCs or into the enterprise network itself.
+> 
+> Can your design balance simplicity, security, and scale without overwhelming the existing infrastructure?"
 
-The target network environment is divided into five logical sub-networks or VPCs:
-* **VPC-A (Student Portal):** Houses student-facing web interfaces with standard security controls (private subnets, Security Groups, WAF/LB).
-* **VPC-B (Faculty Portal):** Provides access to faculty teaching tools and administrative apps (secured via private subnets, Security Groups, and IAM).
-* **VPC-C (Examination System):** **The primary focus of this project.** Represents the highest-security zone, requiring strict isolation and database access protection to prevent assessment tampering.
-* **VPC-D (Research Application):** An open, collaborative space with restricted egress policies to prevent data exfiltration.
-* **Shared Services VPC:** Centrally manages DNS resolution, logging, and infrastructure monitoring.
+To address this prompt, the project maps a college network environment into five logical sub-networks or VPCs:
+* **VPC-A (Student Portal):** General web interfaces with standard load balancers.
+* **VPC-B (Faculty Portal):** Secure interfaces for teaching staff.
+* **VPC-C (Examination System):** The critical system containing exam papers. **This is what I secured in SecureHaven.**
+* **VPC-D (Research Application):** Collaborative apps with high-risk exposure.
+* **Shared Services VPC:** Standard services like DNS and monitoring.
 
 ---
 
 ## Chapter 2 — Existing System and Problem Analysis
 
-### 2.1 Existing Approach
+### 2.1 Standard Kubernetes Configurations
 
-Traditional container orchestration setups treat the internal cluster network as a trusted zone. Standard configurations often exhibit the following characteristics:
-* Containers build from generic base images with developer tools left installed.
-* Application processes run with root privileges (UID 0) inside the container.
-* Filesystem paths remain fully writable, allowing applications to store configuration, logs, and transient files directly on the container's root disk.
-* Pods run under the `default` ServiceAccount, which automatically mounts a JWT token at `/var/run/secrets/kubernetes.io/serviceaccount/token`.
-* No NetworkPolicies are deployed, allowing unrestricted cross-pod and cross-namespace traffic.
+In a default Kubernetes setup:
+* Apps run as the root user.
+* All filesystems are writable.
+* Pods automatically receive administrative API tokens.
+* Any container can reach any other container across namespaces.
 
-### 2.2 Limitations of Existing Approach
+### 2.2 Why Default Settings are Risky
 
-| Configuration Defect | Primary Exploit Vector | Business Impact |
+| Defect | Exploit Path | Business Impact |
 |:---|:---|:---|
-| Root Container Process | Kernel vulnerability exploitation allows escape to the host namespace. | Complete host takeover; access to other containers on the node. |
-| Writable Root Filesystem | Attackers deploy persistent scripts, tools (e.g., nmap, curl), or modify binaries. | Long-term backdoors; data extraction. |
-| Auto-mounted default SA Token | Attacker steals token and uses it to query the Kubernetes API. | Service account hijacking; unauthorized cluster control. |
-| Flat Pod Network | Lateral port scanning and database access from a compromised container. | Data theft from neighboring applications. |
+| Root Container Process | Exploiting an application bug gives root access on the host server. | Complete host takeover; access to other containers on the node. |
+| Writable Root Filesystem | Attackers download tools (like curl or nmap) to scan networks. | Long-term backdoors; data extraction. |
+| Auto-mounted default SA Token | Stolen tokens are used to request admin commands from the cluster API. | Service account hijacking; unauthorized cluster control. |
+| Flat Pod Network | Lateral scanning lets hackers locate and query databases. | Data theft from neighboring applications. |
 | No Resource Limits | Compromised container is used for cryptomining or gets flooded with requests. | Host exhaustion; denial of service for all applications on the host. |
 | Hardcoded Credentials | Database credentials are checked into Git repositories in cleartext. | Credential exposure to unauthorized developers or public leaks. |
 
 ### 2.3 Attack Scenario and Blast-Radius Threat Model
 
-Following the Cisco problem specifications, the project's threat model assumes a multi-stage intrusion scenario:
-1. **Initial Access:** An external attacker compromises a faculty member's credentials or exploits a vulnerability in a public-facing, collaborative application (such as the **Research App**).
-2. **Workload Takeover:** The attacker establishes a foothold in the Research container. Under a default Kubernetes setup, this container would have root rights, a writable filesystem, and access to an auto-mounted ServiceAccount token.
-3. **Lateral Expansion:** The attacker attempts to run network scans (e.g., ARP sweeps, port checks) to discover neighboring database servers in the cluster.
-4. **Privilege Escalation:** The attacker tries to query the Kubernetes API using the auto-mounted token to list secrets, modify permissions, or compromise the cluster control plane.
-5. **Target Compromise:** The attacker locates the **Examination System database** and attempts to write to the grading tables or extract exam papers.
+Based on the Cisco case study, I evaluated this attack path:
+1. **Initial Access:** A hacker steals a faculty login or exploits a public application (like the Research App).
+2. **Workload Takeover:** The hacker gains shell access inside the Research container.
+3. **Lateral Expansion:** The hacker scans the internal network to find other systems.
+4. **Privilege Escalation:** The hacker attempts to query the Kubernetes API to gather tokens or secrets.
+5. **Target Compromise:** The hacker finds the Exam Database and steals exam papers.
 
-**Core Principle:** A compromised application must not automatically lead to a compromised enterprise. The blast radius of the compromised Research container must be restricted at the network, filesystem, identity, and database layers to prevent any lateral reach to the Examination workloads.
+**Core Principle:** A compromised app must not mean a compromised enterprise. I configured the cluster so that a breach in the Research namespace cannot spread to the Exam namespace.
 
 ---
 
 ## Chapter 3 — Proposed System
 
-### 3.1 SecureHaven Overview
+### 3.1 Introducing SecureHaven
 
-The proposed system, **SecureHaven**, is a secure-by-default Kubernetes deployment architecture paired with an interactive Next.js monitoring dashboard. The project hardens the `exam` namespace against the vulnerabilities identified in Chapter 2, achieving a verified, auditable security posture.
+SecureHaven is my proposed solution. It consists of a hardened Kubernetes cluster deployment and a Next.js security monitoring dashboard. It addresses the issues identified in Chapter 2, showing that we can run containerized apps securely without losing observability.
 
 ### 3.2 Key Features
 
-1. **Host-Isolated Containers:** All workloads run as UID 1000, with Linux capabilities dropped and privilege escalation disabled.
-2. **Immutable Filesystems:** The root filesystem of application containers is read-only, preventing post-compromise modifications.
-3. **Calico-Enforced Default-Deny:** A strict default-deny network policy isolates all pods, with explicit connection white-listing.
-4. **Token Isolation:** Workload ServiceAccounts have token auto-mounting turned off to prevent credential theft.
-5. **Secure Dashboard Observability:** Next.js queries Kubernetes APIs server-side, sanitizing and presenting telemetry to the client without exposing API credentials.
-6. **Namespace Resource Caps:** Enforced quotas and container limit ranges prevent resource starvation and DoS attacks.
+* **Non-root Containers:** All workloads run as UID 1000 with dropped capabilities.
+* **Read-only Filesystems:** Application filesystems are read-only, preventing malicious writes.
+* **Network Microsegmentation:** Calico policies enforce a default-deny rule, allowing only whitelisted flows.
+* **Token Hardening:** Workload ServiceAccounts have token auto-mounting turned off.
+* **Secure Telemetry API:** The Next.js dashboard fetches cluster status from the server side, keeping credentials safe.
+* **Resource Limits:** Namespace quotas prevent resource exhaustion attacks.
 
-### 3.3 System Uniqueness and Innovation
+### 3.3 What Makes This Project Unique
 
-SecureHaven introduces several unique features compared to standard security frameworks:
-
-* **Active Defense + Telemetry Observability Loop:** Instead of relying on static configurations or external security agents, SecureHaven integrates security hardening with a tailored monitoring dashboard. The dashboard queries the cluster's state to provide immediate feedback on active security policies.
-* **Clientless In-Cluster Querying:** The dashboard uses the Kubernetes API server-side using the `@kubernetes/client-node` SDK. It sanitizes the response, stripping out environment variables, internal IPs, and secret tokens before sending data to the browser client. This architecture eliminates credential exposure.
-* **Dual-Validation Isolation Testing:** The testing pipeline validates the security posture at both the Kubernetes level (using custom validation commands) and the network layer (using an automated 4x4 connection matrix test run inside Docker Compose).
+* **Active Security Dashboard:** Instead of just setting up rules, I built a visual interface that queries the cluster status and shows active configurations.
+* **Server-side Telemetry Processing:** The dashboard queries APIs server-side. It removes internal IP addresses, environment variables, and tokens before sending data to the client, preventing credential leaks.
+* **Automated Isolation Testing:** I wrote a 4x4 network connection matrix test script that probes network paths between containers to verify traffic restrictions.
 
 ---
 
 ## Chapter 4 — Requirement Analysis
 
-### 4.1 Functional Requirements
+### 4.1 What the System Must Do (Functional Requirements)
 
-* **FR-1 (Health Verification):** The `exam-app` must expose a `/health` endpoint returning a JSON payload indicating application health and database connection status.
-* **FR-2 (Database Integration):** The `exam-app` must query `exam-db` on the custom port `1521` to fetch examination metadata.
-* **FR-3 (Telemetry API):** The security dashboard must expose a server-side route `/api/security-status` to query pods, deployments, services, network policies, resource quotas, and service accounts in the `exam` namespace.
-* **FR-4 (Security Matrix UI):** The dashboard frontend must render a compliance matrix showing the status (PASS/FAIL/INFO) of the security domains.
-* **FR-5 (Resource Visualizer):** The dashboard must display ResourceQuota utilization and LimitRange default settings.
-* **FR-6 (Test Console):** The dashboard must present verification results from the automated testing scripts.
+* **FR-1:** `exam-app` must expose a `/health` endpoint indicating database connection status.
+* **FR-2:** `exam-app` must connect to `exam-db` on the custom port `1521`.
+* **FR-3:** The dashboard must run a server-side route `/api/security-status` to query cluster configuration.
+* **FR-4:** The UI must display a clear security rating score and a list of active security checks.
+* **FR-5:** The UI must show resource quota usage stats.
+* **FR-6:** The dashboard must display verification test output logs.
 
-### 4.2 Non-Functional Requirements
+### 4.2 How the System Should Perform (Non-Functional Requirements)
 
-* **NFR-1 (Dashboard Performance):** The dashboard must load and display metrics within 3 seconds of the initial request.
-* **NFR-2 (Responsive Design):** The user interface must be responsive across standard desktop viewports (minimum width 1024px).
-* **NFR-3 (Theme Consistency):** The dashboard must support dark and light modes, with theme choices persisting across page reloads without visual flicker (FOUC).
-* **NFR-4 (Secure Failure Handling):** The dashboard API must degrade gracefully and display fallback mock metrics if it cannot connect to the Kubernetes API.
+* **NFR-1 (Speed):** The dashboard must load and display metrics within 3 seconds.
+* **NFR-2 (Responsiveness):** The interface must look clean on all standard screen sizes (desktop and mobile).
+* **NFR-3 (Theme Sync):** Theme preferences (dark/light) must persist across page loads without visual flickering.
+* **NFR-4 (Robustness):** If the cluster is down, the dashboard must fail gracefully and show fallback mock metrics.
 
 ---
 
 ## Chapter 5 — System Architecture
 
-### 5.1 Overall Architecture
+### 5.1 High-Level Architecture
 
-SecureHaven is deployed inside a local Kubernetes cluster. The architectural layout consists of the core components below.
+Here is how the SecureHaven services communicate:
 
 ```mermaid
 graph TD
@@ -263,9 +270,9 @@ graph TD
     class db db;
 ```
 
-### 5.2 Kubernetes Architecture
+### 5.2 Kubernetes Setup Details
 
-* **Namespaces:** The `exam` namespace provides a logical isolation boundary.
+* **Namespaces:** I used the `exam` namespace to isolate our application.
 * **ServiceAccounts:**
   * `exam-app-sa`: Assigned to the exam-app pod (no API permissions, token disabled).
   * `exam-db-sa`: Assigned to the database pod (no API permissions, token disabled).
@@ -274,9 +281,9 @@ graph TD
 * **NetworkPolicies:** Enforce traffic rules. The default policy blocks all ingress and egress. Explicit rules allow communication from `exam-app` to `exam-db` on port 1521, and to `kube-dns` on port 53.
 * **ResourceQuota & LimitRange:** The quota limits the namespace to 4 pods, 500m CPU requests, and 256Mi memory requests. The LimitRange sets default requests and limits for containers that do not define them.
 
-### 5.3 Microsegmentation Traffic Matrix
+### 5.3 Network Traffic Access List
 
-To prevent lateral movement and contain compromises, the network policy configurations enforce the following flow constraints:
+To keep systems isolated, network policies enforce these traffic limits:
 
 | Source Workload | Allowed Destination | Egress Protocol / Port | Enforcement Mechanism |
 |:---|:---|:---:|:---|
@@ -286,7 +293,7 @@ To prevent lateral movement and contain compromises, the network policy configur
 | **Research-App** | Research Database, Core DNS | TCP:5432, UDP:53 | Restricted egress policy |
 | **Any Workload** | Kubernetes API Server (`kubernetes.default`) | TCP:443 (Blocked by default) | Default-deny policy |
 
-Any cross-namespace traffic (e.g., a connection attempt from `Research-App` to `exam-db`) is dropped by the Calico network engine, isolating the examination system.
+Cross-namespace traffic (e.g. `Research-App` attempting to reach `exam-db`) is dropped by Calico.
 
 ---
 
@@ -294,26 +301,26 @@ Any cross-namespace traffic (e.g., a connection attempt from `Research-App` to `
 
 ### 6.1 Core Technologies
 
-* **Kubernetes (Kind):** Used to coordinate and manage the containerized workloads.
-* **Calico CNI:** Network plugin used to enforce default-deny and port-level NetworkPolicies.
-* **Docker:** Used to build application container images.
-* **Node.js 22 & Express.js:** Backing runtime and API framework for the `exam-app`.
-* **PostgreSQL 15-alpine:** Database engine used to store exam data.
-* **Next.js 16 (React 19 & TypeScript 5):** Development stack for the security monitoring dashboard.
-* **Tailwind CSS 4:** Styling framework used to implement the responsive UI.
-* **@kubernetes/client-node:** Software development kit used to query the Kubernetes API.
+* **Kubernetes (Kind):** For local multi-node container orchestration.
+* **Calico CNI:** Network plugin to enforce NetworkPolicies.
+* **Docker:** To build application container images.
+* **Node.js 22 & Express.js:** The runtime and web framework for `exam-app`.
+* **PostgreSQL 15-alpine:** Lightweight database engine for `exam-db`.
+* **Next.js 16 (React 19 & TypeScript 5):** Powering the security dashboard.
+* **Tailwind CSS 4:** Modern CSS framework for styling.
+* **@kubernetes/client-node:** To query cluster telemetry server-side.
 
 ---
 
 ## Chapter 7 — Security Design and Implementation
 
-### 7.1 Container Security
+### 7.1 Hardening the Containers
 
-**Problem:** Running containers as root allows an attacker who achieves container escape to inherit root access on the host node.
+**The Problem:** Default containers run as root. If escaped, the attacker gets root access on the host node.
 
-**Control:** Enforce non-root execution, disable privilege escalation, and drop all Linux kernel capabilities.
+**My Solution:** Enforce non-root execution, drop all capabilities, and block privilege escalation.
 
-**Implementation (`k8s/deployments/exam-app.yaml`):**
+**YAML Configuration Example (`k8s/deployments/exam-app.yaml`):**
 ```yaml
 securityContext:
   runAsNonRoot: true
@@ -325,7 +332,7 @@ securityContext:
       - ALL
 ```
 
-**Verification:**
+**Verification Command:**
 ```bash
 $ kubectl exec -n exam deploy/exam-app -- id
 uid=1000(node) gid=1000(node) groups=1000(node)
@@ -333,13 +340,13 @@ uid=1000(node) gid=1000(node) groups=1000(node)
 
 **Result:** PASS — The process runs as unprivileged UID 1000.
 
-### 7.2 Filesystem Hardening
+### 7.2 Read-Only Filesystem Setup
 
-**Problem:** Writable filesystems allow an attacker to write backdoors or modify existing application files.
+**The Problem:** Writable filesystems let attackers write persistent shells or modify application code.
 
-**Control:** Set the container root filesystem to read-only, and mount a temporary writable directory using `emptyDir` with a size limit of `50Mi`.
+**My Solution:** Lock the root filesystem as read-only. Mount a temporary write space using `emptyDir` at `/tmp` with a `50Mi` size limit.
 
-**Implementation (`k8s/deployments/exam-app.yaml`):**
+**YAML Configuration Example (`k8s/deployments/exam-app.yaml`):**
 ```yaml
 volumeMounts:
   - mountPath: /tmp
@@ -350,7 +357,7 @@ volumes:
       sizeLimit: 50Mi
 ```
 
-**Verification:**
+**Verification Command:**
 ```bash
 $ kubectl exec -n exam deploy/exam-app -- sh -c "touch /usr/src/app/test"
 touch: /usr/src/app/test: Read-only file system
@@ -359,15 +366,15 @@ $ kubectl exec -n exam deploy/exam-app -- sh -c "touch /tmp/test && echo TMP_WRI
 TMP_WRITE_OK
 ```
 
-**Result:** PASS — The root directory is read-only, and the `/tmp` folder is write-allowed but restricted to `50Mi`.
+**Result:** PASS — Filesystem modification attempts fail, but transient operations succeed inside `/tmp`.
 
-### 7.3 Network Security
+### 7.3 Calico Network Policies
 
-**Problem:** Standard Kubernetes networking allows any pod to communicate with any other pod in the cluster, facilitating lateral movement.
+**The Problem:** Flat networks allow cross-workload attacks.
 
-**Control:** Deploy a default-deny NetworkPolicy for the namespace, and define explicit rules for app-to-database connections and DNS queries.
+**My Solution:** Block all traffic by default using a default-deny policy. Explicitly whitelist outgoing traffic from `exam-app` to `exam-db` and `kube-dns`.
 
-**Implementation (`k8s/network-policies/database/exam-db-policy.yaml`):**
+**YAML Configuration Example (`k8s/network-policies/database/exam-db-policy.yaml`):**
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -388,15 +395,15 @@ spec:
           port: 1521
 ```
 
-**Result:** PASS — Unauthorized ingress and egress traffic is dropped.
+**Result:** PASS — Unauthorized ingress and egress traffic is blocked.
 
-### 7.4 RBAC and ServiceAccounts
+### 7.4 RBAC Roles and ServiceAccounts
 
-**Problem:** Default ServiceAccounts carry tokens that mount inside containers, allowing attackers who compromise a container to query the Kubernetes API.
+**The Problem:** ServiceAccount credentials can be stolen if auto-mounted inside containers.
 
-**Control:** Assign dedicated ServiceAccounts with `automountServiceAccountToken: false` to workloads, and create a restricted, read-only ServiceAccount for the dashboard.
+**My Solution:** Set `automountServiceAccountToken: false` on applications. Create a custom ServiceAccount for the dashboard with read-only cluster rights.
 
-**Implementation (`k8s/rbac/exam-serviceaccount.yaml`):**
+**YAML Configuration Example (`k8s/rbac/exam-serviceaccount.yaml`):**
 ```yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -408,13 +415,13 @@ automountServiceAccountToken: false
 
 **Result:** PASS — Application workloads run without API tokens.
 
-### 7.5 Secrets Management
+### 7.5 Managing Secrets
 
-**Problem:** Cleartext credentials stored in source code are vulnerable to exposure in code repositories.
+**The Problem:** Storing passwords in code causes leaks.
 
-**Control:** Inject secrets dynamically at runtime using Kubernetes Secrets and environment variables.
+**My Solution:** Inject passwords at runtime using environment variables mapped to Kubernetes Secrets.
 
-**Implementation (`k8s/deployments/exam-app.yaml`):**
+**YAML Configuration Example (`k8s/deployments/exam-app.yaml`):**
 ```yaml
 env:
   - name: DB_PASSWORD
@@ -426,13 +433,13 @@ env:
 
 **Result:** PASS — Credentials are injected at runtime.
 
-### 7.6 Resource Protection
+### 7.6 Setting Resource Limits
 
-**Problem:** A container consuming excessive resources can exhaust host capacity and deny service to neighboring applications.
+**The Problem:** One compromised pod can eat up CPU and memory, crashing other applications on the node.
 
-**Control:** Configure a namespace ResourceQuota to cap aggregate resources, and a LimitRange to set default requests and limits.
+**My Solution:** Define a namespace-level ResourceQuota and set default Limits using a LimitRange.
 
-**Implementation (`k8s/deployments/exam-quota.yaml`):**
+**YAML Configuration Example (`k8s/deployments/exam-quota.yaml`):**
 ```yaml
 apiVersion: v1
 kind: ResourceQuota
@@ -450,19 +457,19 @@ spec:
 
 **Result:** PASS — Resource allocations are restricted at the namespace and container levels.
 
-### 7.7 Container Image Security
+### 7.7 Container Image Decisions
 
-**Problem:** Outdated base images may contain critical vulnerabilities in their system packages.
+**The Problem:** Heavy base images contain unnecessary tools that hackers can exploit.
 
-**Control:** Use Node.js 22 on Alpine Linux, execute production-only dependency installations, and use `.dockerignore` files to exclude sensitive resources from container builds.
+**My Solution:** Use lightweight `Node.js 22 Alpine` base images. Run `npm audit` during the build and block dev dependencies to keep the image small and secure.
 
 **Result:** PASS — The application builds from a hardened base image.
 
-### 7.8 Dashboard API Security
+### 7.8 Dashboard Security Design
 
-**Problem:** Observability tools can leak cluster credentials to client web browsers.
+**The Problem:** Web dashboards can expose credentials or cluster endpoints to client browsers.
 
-**Control:** Execute Kubernetes client calls server-side in Next.js, sanitizing the payload before returning data to the client.
+**My Solution:** The Next.js API route queries the cluster on the server side using the `@kubernetes/client-node` SDK. The server sanitizes the data, removing internal IPs, environment variables, and tokens before sending a clean status report to the browser.
 
 **Result:** PASS — The client browser receives only safe telemetry data.
 
@@ -470,11 +477,11 @@ spec:
 
 ## Chapter 8 — Dashboard Implementation
 
-### 8.1 Overview
+### 8.1 Dashboard Layout
 
 The dashboard is built on Next.js 16, utilizing server-side rendering (SSR) and API routes to monitor cluster health.
 
-### 8.2 UI Components
+### 8.2 Frontend Components
 
 * **`SecurityScore.tsx`:** Renders an animated SVG gauge representing the overall security score.
 * **`SecurityControlCard.tsx`:** Renders a list of the security domains and their status.
@@ -483,24 +490,24 @@ The dashboard is built on Next.js 16, utilizing server-side rendering (SSR) and 
 * **`ResourceOverview.tsx`:** Displays ResourceQuota utilization progress bars.
 * **`VerificationPanel.tsx`:** Displays the status of the runtime verification checks.
 
-### 8.3 Theme System Implementation
+### 8.3 Theme Flickering Fix (FOUC)
 
-The dashboard features a dark and light theme system designed to prevent visual flickering on page load:
-1. **Blocking Script:** A synchronous JavaScript snippet in `<head>` (in `app/layout.tsx`) reads the user's theme preference from `localStorage` and applies the `.dark` class before the first paint.
-2. **Hydration Sync:** The theme toggle in `Topbar.tsx` uses a React `mounted` state check to ensure the UI is hydrated before rendering client-side assets, resolving hydration warnings.
+To prevent theme flickering on page load:
+1. **Head Script:** A synchronous script in `<head>` (in `app/layout.tsx`) reads the theme preference from `localStorage` and applies the `.dark` class before the first paint.
+2. **Hydration Sync:** The theme toggle in `Topbar.tsx` uses a React `mounted` state check to delay rendering client-side assets until hydration completes, preventing hydration warnings.
 
 ---
 
 ## Chapter 9 — Testing and Verification
 
-### 9.1 Testing Strategy
+### 9.1 How I Tested the Project
 
-Testing was conducted across three layers:
-1. **Automated Suites:** Running `run_tests.js` to scan for secrets and check Dockerfile configurations, and `container_tests.js` to run a network isolation matrix test.
-2. **Kubernetes Runtime Checks:** Running `kubectl exec` and `kubectl get` commands to verify pod privileges, read-only filesystems, and policies.
-3. **Build Verifications:** Executing Next.js build compilation checks to ensure type safety.
+I tested the system at three levels:
+1. **Automated Scripts:** Running `run_tests.js` to scan for cleartext secrets and verify Dockerfile directives. Running `container_tests.js` to verify network isolation boundaries.
+2. **Runtime Verification:** Running commands like `kubectl exec` to check privileges, filesystems, and policies.
+3. **Build Compilations:** Running Next.js build compilation checks to ensure type safety.
 
-### 9.2 Verification Results
+### 9.2 Real-world Verification Results
 
 | Test ID | Security Control Tested | Expected Result | Actual Result | Status |
 |:---:|:---|:---|:---|:---:|
@@ -518,17 +525,17 @@ Testing was conducted across three layers:
 | SEC-12 | Pod health state | Status is Running | Pods Running | ✅ PASS |
 | SEC-13 | Node.js engine version | Version is v22.23.2 | Version is v22.23.2 | ✅ PASS |
 
-### 9.3 Automated Test Suites
+### 9.3 Custom Automated Test Scripts
 
-The automated test script `run_tests.js` scans the source code for hardcoded secrets, verifies Dockerfile configurations, and performs health endpoint checks. 
+The test runner `run_tests.js` checks the codebase for secrets, verifies Dockerfiles, and runs endpoint validation.
 
-The test runner `tests/container/container_tests.js` executes a connection matrix test across the application services, verifying that workloads can only connect to their designated database.
+The network isolation test runner `tests/container/container_tests.js` checks connectivity pathways between microservices, verifying that workloads can only access their allocated database.
 
 ---
 
 ## Chapter 10 — Results and Discussion
 
-### 10.1 Security Score Summary
+### 10.1 Score Breakdown
 
 | Security Domain | Core Indicator Metric | Score | Status |
 |:---|:---|:---:|:---:|
@@ -542,7 +549,7 @@ The test runner `tests/container/container_tests.js` executes a connection matri
 | Image Security | Node 22-alpine base, npm audit clean | 80/100 | ⚠️ INFO |
 | **Overall Score** | **System Compliance Rating** | **96/100** | **SECURE** |
 
-### 10.2 Technical Discussion
+### 10.2 Technical Observations
 
 Applying Kubernetes native security configurations helps establish a defense-in-depth security posture. Isolating the monitoring dashboard with a read-only ServiceAccount demonstrates the principle of least privilege. 
 
@@ -550,54 +557,50 @@ The 10-point deduction in Secrets Management reflects a limitation: Kubernetes S
 
 ---
 
-## Chapter 11 — Cisco Security Technology Mapping & Enterprise Alignment
+## Chapter 11 — Cisco Security Technology Mapping
 
 To scale this deployment architecture to a hybrid enterprise environment, the native controls implemented in SecureHaven map to Cisco's cybersecurity product portfolio:
 
 | Security Layer | Implemented Native Control | Cisco Enterprise Equivalency | Functionality & Integration |
 |:---|:---|:---|:---|
-| **Network Segmentation** | Calico NetworkPolicies | **Cisco Secure Workload** (formerly Tetration) | Enforces microsegmentation policies based on application telemetry and behavior analysis. |
-| **Perimeter & Ingress** | Kubernetes Ingress & Services | **Cisco Secure Firewall** (FTD) | Inspects incoming traffic, enforces IPS policies, and filters malicious requests. |
-| **Workload Identity** | ServiceAccounts & RBAC | **Cisco ISE** (Identity Services Engine) | Manages identity authorization and enforces access policies for users and endpoints. |
-| **Remote Access** | Local Admin access routes | **Cisco Secure Access** (ZTNA) | Replaces traditional VPNs with application-level access control based on device posture and MFA. |
+| **Network Segmentation** | Calico NetworkPolicies | **Cisco Secure Workload** | Enforces microsegmentation policies based on application telemetry and behavior analysis. |
+| **Perimeter & Ingress** | Kubernetes Ingress & Services | **Cisco Secure Firewall** | Inspects incoming traffic, enforces IPS policies, and filters malicious requests. |
+| **Workload Identity** | ServiceAccounts & RBAC | **Cisco ISE** | Manages identity authorization and enforces access policies for users and endpoints. |
+| **Remote Access** | Local Admin access routes | **Cisco Secure Access** | Replaces traditional VPNs with application-level access control based on device posture and MFA. |
 | **Threat Intelligence** | Local vulnerability auditing | **Cisco Talos** | Feeds real-time threat intelligence to block known malicious IPs and domain lookups. |
-| **Flow Telemetry** | API monitoring dashboard | **Cisco Secure Network Analytics** (Stealthwatch) | Analyzes network flow logs to detect anomalous behaviors, such as lateral sweeps or data exfiltration. |
+| **Flow Telemetry** | API monitoring dashboard | **Cisco Secure Network Analytics** | Analyzes network flow logs to detect anomalous behaviors, such as lateral sweeps or data exfiltration. |
 
 This mapping demonstrates that the Zero-Trust controls established at the container level within this local cluster are aligned with enterprise-grade security architectures.
 
 ---
 
-## Chapter 12 — Multi-Stakeholder Responsibilities & DevSecOps Workflow
+## Chapter 12 — Teams and Secure Deployment Steps
 
-### 12.1 Multi-Stakeholder Matrix
+### 12.1 Engineering Roles
 
-Implementing a secure hybrid data center requires collaboration across engineering teams. SecureHaven defines the responsibility matrix below based on the Cisco guidelines:
+* **Application Developer:** Secures code, prunes package dependencies, and configures database connections.
+* **Security Engineer:** Builds threat models and audits YAML configurations.
+* **Network Designer:** Sets up VPC subnets and firewall boundary rules.
+* **Kubernetes Platform Engineer:** Coordinates cluster operations, handles namespaces, and manages network configurations.
+* **IAM Team:** Enforces SSO, MFA, and service credentials.
+* **SOC / SIEM Analysts:** Tracks system telemetry logs and responds to incidents.
 
-* **Application Developer:** Secures application code, manages internal dependencies, prunes package files, and configures environment-injected secrets (e.g. database credentials).
-* **Security Engineer:** Creates threat models, defines security requirements, audits configurations, and manages compliance policies.
-* **Network Designer:** Manages routing, constructs network segments (VPCs/VNETs), and configures firewall edge rules.
-* **Kubernetes Platform Engineer:** Deploys and manages clusters, configures RBAC policies, manages namespaces, and maintains the CNI network engine.
-* **Identity & Access Management (IAM) Team:** Manages federated identity, authentication (SSO/MFA), and service account access rules.
-* **SOC / SIEM Analysts:** Monitors logs, analyzes security telemetry, and manages incident response workflows.
+### 12.2 Deployment Workflow
 
-### 12.2 Secure Application Deployment Workflow
-
-SecureHaven follows a 10-step secure deployment workflow:
-
-1. **Requirements & Risk Analysis:** Establish security baselines and perform a threat audit.
-2. **Application Classification:** Categorize workloads by risk and data sensitivity.
-3. **Choose Data Center/Cloud Placement:** Select hosting zones (on-premises OpenShift vs. public cloud EKS/AKS).
-4. **Create VPC/VLAN/Network Segment:** Construct isolated subnets and disable routing between different zones.
-5. **Define IAM, RBAC, and Service Identities:** Create dedicated ServiceAccounts with least-privilege permissions.
-6. **Define Security Groups and Firewall Rules:** Apply port-level ingress and egress restrictions.
-7. **Define Kubernetes Namespace and NetworkPolicies:** Enforce default-deny and declare explicit allow-list connection paths.
-8. **Security Testing and Approval:** Run automated scanning suites to verify the posture before deployment.
-9. **Production Deployment:** Deploy workloads to the cluster.
-10. **Continuous Monitoring and Periodic Review:** Collect audit logs and security telemetry to identify anomalies.
+1. **Requirements & Risk Analysis:** Establish security baselines.
+2. **Application Classification:** Classify applications by sensitivity.
+3. **Choose Placement:** Select cloud hosting settings.
+4. **Create Network Segment:** Build isolated subnets and disable routing between different zones.
+5. **Define Identities:** Set up ServiceAccounts with least-privilege permissions.
+6. **Define Firewall Rules:** Configure port restrictions.
+7. **Define NetworkPolicies:** Enforce default-deny configurations.
+8. **Run Security Tests:** Verify settings before staging.
+9. **Production Deployment:** Stage workloads.
+10. **Continuous Monitoring:** Collect telemetry to verify runtime safety.
 
 ---
 
-## Chapter 13 — Limitations
+## Chapter 13 — Current Limitations
 
 1. **Vulnerability Scanning Limitation:** Local testing did not include a binary container image scanner (such as Trivy or Grype).
 2. **Namespace Hardening Scope:** Security hardening is restricted to the `exam` namespace. The `student`, `faculty`, and `research` namespaces run in legacy, unhardened states.
@@ -607,7 +610,7 @@ SecureHaven follows a 10-step secure deployment workflow:
 
 ---
 
-## Chapter 14 — Future Enhancements
+## Chapter 14 — Future Work
 
 1. **Vulnerability Scanner Integration:** Integrate Trivy or Grype scanning into the container image build pipeline.
 2. **Secrets Manager Integration:** Integrate a dedicated secret manager (like HashiCorp Vault) to handle database credentials.
@@ -623,17 +626,17 @@ SecureHaven demonstrates the practical implementation of Zero-Trust security pri
 
 ---
 
-## Chapter 16 — Developer Contribution and Implementation Challenges
+## Chapter 16 — My Contributions & Technical Challenges Solved
 
-### 16.1 Developer Contribution Details
+### 16.1 What I Worked On
 
-As the primary developer of the SecureHaven project, my contributions spanned security engineering, backend API development, and frontend interface design:
+As the main developer for SecureHaven, I set up the following:
 * **Security Engineering:** Created the Kubernetes manifests, including SecurityContexts, NetworkPolicies, ServiceAccounts, and resource limits for the workloads.
 * **Backend API Development:** Built the server-side Next.js API route that queries the Kubernetes cluster using the `@kubernetes/client-node` SDK.
 * **Frontend Design:** Designed and developed the glassmorphic user interface using Tailwind CSS and React, implementing a dark and light theme switching system.
 * **Automation Testing:** Wrote the test runners `run_tests.js` and `container_tests.js` to validate image configurations and network isolation boundaries.
 
-### 16.2 Implementation Challenges & Resolutions
+### 16.2 Major Bugs I Faced and How I Fixed Them
 
 #### Challenge 1: Hydration Mismatch & FOUC in Next.js Theme System
 * **Problem:** Implementing the dark and light theme toggle caused a Flash of Unstyled Content (FOUC) on page reload, as well as React hydration warnings because the server-rendered HTML did not match the client-side theme state stored in `localStorage`.
@@ -649,7 +652,7 @@ As the primary developer of the SecureHaven project, my contributions spanned se
 
 ---
 
-## Chapter 17 — Real-World Application and Global Impact
+## Chapter 17 — Real-World Use Cases
 
 ### 17.1 Real-World Significance
 
@@ -675,7 +678,7 @@ SecureHaven demonstrates how to implement Zero-Trust principles in microservice 
 
 ---
 
-## Appendix A — Key Kubernetes Manifests
+## Appendix A — Key Configuration Manifests
 
 ### A.1 exam-app Deployment (excerpt)
 ```yaml
@@ -729,7 +732,7 @@ rules:
     verbs: [get, list]
 ```
 
-## Appendix B — Verification Commands
+## Appendix B — Testing Commands Used
 
 ```bash
 # Pod status
@@ -759,7 +762,7 @@ node run_tests.js
 node tests/container/container_tests.js
 ```
 
-## Appendix C — Project File Listing and Code Repository Navigation
+## Appendix C — Code Folder Map and GitHub Repository Links
 
 Since this report is exported to DOCX/PDF, the local file links are not directly browsable. You can access the complete open-source codebase and live configuration files on the official GitHub repository:
 **Repository URL:** [https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security](https://github.com/Deo-Mohan/Krishna-Mohan-LNCTS-Cyber-Security)
@@ -783,7 +786,7 @@ Below is the directory map with direct GitHub links and comprehensive descriptio
 
 ---
 
-## Appendix D — Complete 80 Test Case Logs
+## Appendix D — Full 80 Test Case Logs
 
 To ensure maximum validation transparency, the complete test logs containing 80 distinct checks are documented below:
 
@@ -841,6 +844,3 @@ To ensure maximum validation transparency, the complete test logs containing 80 
 * **Next.js Production Build:** Verifies generation of optimized static pages (✅ PASS)
 * **Dashboard API validation (6 checks):** Validates data response, generic errors, and token safety on dashboard server routes (✅ 6/6 PASS)
 * **Application Integrity (11 checks):** Audits Dockerfile configurations and Express endpoints (✅ 11/11 PASS)
-
-
-
